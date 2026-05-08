@@ -1,13 +1,12 @@
-import { AST_NODE_TYPES } from '@typescript-eslint/utils';
 import {
   createRule,
   getAccessorValue,
   getFirstMatcherArg,
   parseJestFnCall,
-} from './utils';
+} from './utils/index.js';
 
 export default createRule({
-  name: __filename,
+  name: 'prefer-to-have-been-called-once',
   meta: {
     docs: {
       description: 'Suggest using `toHaveBeenCalledOnce()`',
@@ -35,7 +34,7 @@ export default createRule({
         ) {
           const arg = getFirstMatcherArg(jestFnCall);
 
-          if (arg.type !== AST_NODE_TYPES.Literal || arg.value !== 1) {
+          if (arg.type !== 'Literal' || arg.value !== 1) {
             return;
           }
 

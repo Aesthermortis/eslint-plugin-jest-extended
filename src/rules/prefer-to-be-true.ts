@@ -1,21 +1,21 @@
-import { AST_NODE_TYPES, type TSESTree } from '@typescript-eslint/utils';
+import type { TSESTree } from '@typescript-eslint/utils';
 import {
   EqualityMatcher,
   createRule,
   getAccessorValue,
   getFirstMatcherArg,
   parseJestFnCall,
-} from './utils';
+} from './utils/index.js';
 
 interface TrueLiteral extends TSESTree.BooleanLiteral {
   value: true;
 }
 
 const isTrueLiteral = (node: TSESTree.Node): node is TrueLiteral =>
-  node.type === AST_NODE_TYPES.Literal && node.value === true;
+  node.type === 'Literal' && node.value === true;
 
 export default createRule({
-  name: __filename,
+  name: 'prefer-to-be-true',
   meta: {
     docs: {
       description: 'Suggest using `toBeTrue()`',
@@ -40,7 +40,10 @@ export default createRule({
         if (
           jestFnCall.args.length === 1 &&
           isTrueLiteral(getFirstMatcherArg(jestFnCall)) &&
-          EqualityMatcher.hasOwnProperty(getAccessorValue(jestFnCall.matcher))
+          Object.prototype.hasOwnProperty.call(
+            EqualityMatcher,
+            getAccessorValue(jestFnCall.matcher),
+          )
         ) {
           context.report({
             node: jestFnCall.matcher,

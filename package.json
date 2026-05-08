@@ -9,119 +9,80 @@
     "eslint-plugin",
     "eslint-plugin-jest"
   ],
-  "homepage": "https://github.com/jest-community/eslint-plugin-jest-extended#readme",
+  "homepage": "https://github.com/Aesthermortis/eslint-plugin-jest-extended#readme",
   "bugs": {
-    "url": "https://github.com/jest-community/eslint-plugin-jest-extended/issues"
+    "url": "https://github.com/Aesthermortis/eslint-plugin-jest-extended/issues"
   },
-  "repository": "https://github.com/jest-community/eslint-plugin-jest-extended",
+  "repository": "https://github.com/Aesthermortis/eslint-plugin-jest-extended",
   "license": "MIT",
-  "main": "lib/",
-  "directories": {
-    "lib": "lib",
-    "doc": "docs"
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
   },
   "files": [
-    "docs/",
-    "lib/"
+    "dist",
+    "docs",
+    "index.d.ts",
+    "LICENSE",
+    "README.md"
   ],
   "scripts": {
-    "build": "babel --extensions .js,.ts src --out-dir lib --copy-files && rimraf --glob lib/__tests__ 'lib/**/__tests__'",
-    "postinstall": "is-ci || husky",
-    "lint": "eslint . --ignore-pattern '!.eslintrc.js' --ext js,ts",
-    "prepack": "rimraf --glob lib && yarn build",
-    "prepublishOnly": "pinst --disable",
-    "prettier:check": "prettier --check .",
-    "prettier:write": "prettier --write .",
-    "postpublish": "pinst --enable",
-    "test": "jest",
-    "tools:regenerate-docs": "yarn prepack && eslint-doc-generator",
-    "typecheck": "tsc -p ."
-  },
-  "commitlint": {
-    "extends": [
-      "@commitlint/config-conventional"
-    ]
-  },
-  "lint-staged": {
-    "*.{js,ts}": "eslint --fix",
-    "*.{md,json,yml}": "prettier --write"
-  },
-  "prettier": {
-    "arrowParens": "avoid",
-    "endOfLine": "auto",
-    "proseWrap": "always",
-    "singleQuote": true
-  },
-  "release": {
-    "branches": [
-      "main",
-      {
-        "name": "next",
-        "prerelease": true
-      }
-    ],
-    "plugins": [
-      "@semantic-release/commit-analyzer",
-      "@semantic-release/release-notes-generator",
-      "@semantic-release/changelog",
-      "@semantic-release/npm",
-      "@semantic-release/git",
-      "@semantic-release/github"
-    ]
-  },
-  "dependencies": {
-    "@typescript-eslint/utils": "^6.0.0 || ^7.0.0 || ^8.0.0"
+    "prebuild": "node -e \"const fs=require('node:fs'); for (const dir of ['dist', 'coverage', '.cache']) fs.rmSync(dir,{recursive:true,force:true});\"",
+    "build": "rollup -c",
+    "lint": "eslint . --cache --cache-strategy content --cache-location .cache/eslint/ --report-unused-disable-directives",
+    "lint:fix": "eslint . --fix --cache --cache-strategy content --cache-location .cache/eslint/ --report-unused-disable-directives",
+    "prepack": "npm run build",
+    "prepare": "husky && npm run build",
+    "docs:check": "npm run build && eslint-doc-generator --check",
+    "docs:generate": "npm run build && eslint-doc-generator",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "test:update": "npm run test:coverage -- --updateSnapshot",
+    "typecheck": "tsc -p . --noEmit"
   },
   "devDependencies": {
-    "@babel/cli": "^7.4.4",
-    "@babel/core": "^7.4.4",
-    "@babel/preset-env": "^7.4.4",
-    "@babel/preset-typescript": "^7.3.3",
-    "@commitlint/cli": "^19.0.0",
-    "@commitlint/config-conventional": "^19.0.0",
-    "@eslint-community/eslint-plugin-eslint-comments": "^4.4.1",
-    "@schemastore/package": "^0.0.10",
-    "@semantic-release/changelog": "^6.0.0",
-    "@semantic-release/git": "^10.0.0",
-    "@tsconfig/node16": "^16.0.0",
-    "@types/dedent": "^0.7.0",
-    "@types/jest": "^29.0.0",
-    "@types/node": "^16.0.0",
-    "@types/semver": "^7.5.8",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
-    "@typescript-eslint/utils": "^6.0.0",
-    "babel-jest": "^29.0.0",
-    "babel-plugin-replace-ts-export-assignment": "^0.0.2",
+    "@commitlint/cli": "^20.5.3",
+    "@commitlint/config-conventional": "^20.5.3",
+    "@eslint-community/eslint-plugin-eslint-comments": "^4.7.1",
+    "@eslint/js": "^10.0.1",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "@rollup/plugin-typescript": "^12.3.0",
+    "@tsconfig/node24": "^24.0.4",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.0.0",
+    "@typescript-eslint/utils": "^8.59.2",
     "dedent": "^1.0.0",
-    "eslint": "^7.0.0 || ^8.0.0",
-    "eslint-config-prettier": "^10.0.0",
-    "eslint-doc-generator": "^1.0.0",
-    "eslint-plugin-eslint-plugin": "^6.0.0",
-    "eslint-plugin-import": "^2.18.0",
-    "eslint-plugin-n": "^17.0.0",
-    "eslint-plugin-prettier": "^5.0.0",
-    "eslint-remote-tester": "^3.0.0",
-    "eslint-remote-tester-repositories": "^1.0.0",
-    "husky": "^9.0.0",
-    "is-ci": "^4.0.0",
-    "jest": "^29.0.0",
-    "jest-runner-eslint": "^2.0.0",
-    "lint-staged": "^13.0.3",
-    "markdown-link-check": "~3.12.0",
-    "pinst": "^3.0.0",
-    "prettier": "^3.0.0",
-    "rimraf": "^5.0.0",
-    "semantic-release": "^24.0.0",
-    "semver": "^7.6.0",
-    "ts-node": "^10.9.1",
-    "typescript": "^5.0.0"
+    "eslint": "^10.3.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-doc-generator": "^3.3.2",
+    "eslint-plugin-eslint-plugin": "^7.3.3",
+    "eslint-plugin-jest": "^29.15.2",
+    "eslint-plugin-n": "^18.0.1",
+    "husky": "^9.1.7",
+    "jest": "^30.3.0",
+    "lint-staged": "^17.0.2",
+    "prettier": "^3.8.3",
+    "rollup": "^4.60.3",
+    "ts-jest": "^29.4.9",
+    "typescript": "^5.0.0",
+    "typescript-eslint": "^8.59.2"
   },
   "peerDependencies": {
-    "eslint": "^7.0.0 || ^8.0.0 || ^9.0.0"
+    "eslint": "^10.0.0"
   },
-  "packageManager": "yarn@3.8.7",
+  "packageManager": "npm@11.0.0",
   "engines": {
-    "node": "^16.10.0 || ^18.12.0 || >=20.0.0"
+    "node": ">=24.0.0",
+    "npm": ">=11.0.0"
   }
 }

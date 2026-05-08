@@ -1,5 +1,10 @@
 # Suggest using `toHaveBeenCalledOnce()` (`prefer-to-have-been-called-once`)
 
+📝 Suggest using `toHaveBeenCalledOnce()`.
+
+💼 This rule is enabled in the 🌐 `all`
+[config](https://github.com/jest-community/eslint-plugin-jest-extended/blob/main/README.md#shareable-configurations).
+
 🔧 This rule is automatically fixable by the
 [`--fix` CLI option](https://eslint.org/docs/latest/user-guide/command-line-interface#--fix).
 

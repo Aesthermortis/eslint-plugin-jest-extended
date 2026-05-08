@@ -1,22 +1,20 @@
-import {
-  AST_NODE_TYPES,
-  type TSESLint,
-  type TSESTree,
-} from '@typescript-eslint/utils';
+import type { TSESLint, TSESTree } from '@typescript-eslint/utils';
 import {
   type AccessorNode,
+  getAccessorValue,
+  getStringValue,
+  isIdentifier,
+  isStringNode,
+  isSupportedAccessor,
+} from './accessors.js';
+import {
   DescribeAlias,
   HookName,
   type KnownMemberExpression,
   ModifierName,
   TestCaseName,
   findTopMostCallExpression,
-  getAccessorValue,
-  getStringValue,
-  isIdentifier,
-  isStringNode,
-  isSupportedAccessor,
-} from '../utils';
+} from './misc.js';
 
 const joinChains = (
   a: AccessorNode[] | null,
@@ -29,11 +27,11 @@ export function getNodeChain(node: TSESTree.Node): AccessorNode[] | null {
   }
 
   switch (node.type) {
-    case AST_NODE_TYPES.TaggedTemplateExpression:
+    case 'TaggedTemplateExpression':
       return getNodeChain(node.tag);
-    case AST_NODE_TYPES.MemberExpression:
+    case 'MemberExpression':
       return joinChains(getNodeChain(node.object), getNodeChain(node.property));
-    case AST_NODE_TYPES.CallExpression:
+    case 'CallExpression':
       return getNodeChain(node.callee);
   }
 
@@ -55,16 +53,16 @@ const determineJestFnType = (name: string): JestFnType => {
     return 'jest';
   }
 
-  if (DescribeAlias.hasOwnProperty(name)) {
+  if (Object.prototype.hasOwnProperty.call(DescribeAlias, name)) {
     return 'describe';
   }
 
-  if (TestCaseName.hasOwnProperty(name)) {
+  if (Object.prototype.hasOwnProperty.call(TestCaseName, name)) {
     return 'test';
   }
 
   /* istanbul ignore else */
-  if (HookName.hasOwnProperty(name)) {
+  if (Object.prototype.hasOwnProperty.call(HookName, name)) {
     return 'hook';
   }
 
@@ -88,8 +86,7 @@ interface ParsedGeneralJestFnCall extends BaseParsedJestFnCall {
 }
 
 export interface ParsedExpectFnCall
-  extends BaseParsedJestFnCall,
-    ModifiersAndMatcher {
+  extends BaseParsedJestFnCall, ModifiersAndMatcher {
   type: 'expect';
 }
 
@@ -247,17 +244,14 @@ const parseJestFnCallWithReasonInner = (
   // if we're an `each()`, ensure we're the outer CallExpression (i.e `.each()()`)
   if (lastLink === 'each') {
     if (
-      node.callee.type !== AST_NODE_TYPES.CallExpression &&
-      node.callee.type !== AST_NODE_TYPES.TaggedTemplateExpression
+      node.callee.type !== 'CallExpression' &&
+      node.callee.type !== 'TaggedTemplateExpression'
     ) {
       return null;
     }
   }
 
-  if (
-    node.callee.type === AST_NODE_TYPES.TaggedTemplateExpression &&
-    lastLink !== 'each'
-  ) {
+  if (node.callee.type === 'TaggedTemplateExpression' && lastLink !== 'each') {
     return null;
   }
 
@@ -303,7 +297,7 @@ const parseJestFnCallWithReasonInner = (
     }
 
     if (result === 'matcher-not-found') {
-      if (node.parent?.type === AST_NODE_TYPES.MemberExpression) {
+      if (node.parent?.type === 'MemberExpression') {
         return 'matcher-not-called';
       }
     }
@@ -315,7 +309,7 @@ const parseJestFnCallWithReasonInner = (
   if (
     chain
       .slice(0, chain.length - 1)
-      .some(nod => nod.parent?.type !== AST_NODE_TYPES.MemberExpression)
+      .some(nod => nod.parent?.type !== 'MemberExpression')
   ) {
     return null;
   }
@@ -324,8 +318,8 @@ const parseJestFnCallWithReasonInner = (
   // parsing e.g. x().y.z(), we'll incorrectly find & parse "x()" even though
   // the full chain is not a valid jest function call chain
   if (
-    node.parent?.type === AST_NODE_TYPES.CallExpression ||
-    node.parent?.type === AST_NODE_TYPES.MemberExpression
+    node.parent?.type === 'CallExpression' ||
+    node.parent?.type === 'MemberExpression'
   ) {
     return null;
   }
@@ -352,8 +346,8 @@ const findModifiersAndMatcher = (
     // check if the member is being called, which means it is the matcher
     // (and also the end of the entire "expect" call chain)
     if (
-      member.parent?.type === AST_NODE_TYPES.MemberExpression &&
-      member.parent.parent?.type === AST_NODE_TYPES.CallExpression
+      member.parent?.type === 'MemberExpression' &&
+      member.parent.parent?.type === 'CallExpression'
     ) {
       return {
         matcher: member,
@@ -367,7 +361,7 @@ const findModifiersAndMatcher = (
 
     if (modifiers.length === 0) {
       // the first modifier can be any of the three modifiers
-      if (!ModifierName.hasOwnProperty(name)) {
+      if (!Object.prototype.hasOwnProperty.call(ModifierName, name)) {
         return 'modifier-unknown';
       }
     } else if (modifiers.length === 1) {
@@ -423,11 +417,11 @@ interface ImportDetails {
 const describeImportDefAsImport = (
   def: TSESLint.Scope.Definitions.ImportBindingDefinition,
 ): ImportDetails | null => {
-  if (def.parent.type === AST_NODE_TYPES.TSImportEqualsDeclaration) {
+  if (def.parent.type === 'TSImportEqualsDeclaration') {
     return null;
   }
 
-  if (def.node.type !== AST_NODE_TYPES.ImportSpecifier) {
+  if (def.node.type !== 'ImportSpecifier') {
     return null;
   }
 
@@ -438,7 +432,7 @@ const describeImportDefAsImport = (
 
   return {
     source: def.parent.source.value,
-    imported: def.node.imported.name,
+    imported: getAccessorValue(def.node.imported),
     local: def.node.local.name,
   };
 };
@@ -453,18 +447,15 @@ const describeImportDefAsImport = (
 const findImportSourceNode = (
   node: TSESTree.Expression,
 ): TSESTree.Node | null => {
-  if (node.type === AST_NODE_TYPES.AwaitExpression) {
-    if (node.argument.type === AST_NODE_TYPES.ImportExpression) {
+  if (node.type === 'AwaitExpression') {
+    if (node.argument.type === 'ImportExpression') {
       return node.argument.source;
     }
 
     return null;
   }
 
-  if (
-    node.type === AST_NODE_TYPES.CallExpression &&
-    isIdentifier(node.callee, 'require')
-  ) {
+  if (node.type === 'CallExpression' && isIdentifier(node.callee, 'require')) {
     return node.arguments[0] ?? null;
   }
 
@@ -485,7 +476,7 @@ const describeVariableDefAsImport = (
     return null;
   }
 
-  if (def.name.parent?.type !== AST_NODE_TYPES.Property) {
+  if (def.name.parent?.type !== 'Property') {
     return null;
   }
 

@@ -1,4 +1,4 @@
-import { AST_NODE_TYPES, type TSESTree } from '@typescript-eslint/utils';
+import type { TSESTree } from '@typescript-eslint/utils';
 
 /**
  * A `Literal` with a `value` of type `string`.
@@ -25,7 +25,7 @@ const isStringLiteral = <V extends string>(
   node: TSESTree.Node,
   value?: V,
 ): node is StringLiteral<V> =>
-  node.type === AST_NODE_TYPES.Literal &&
+  node.type === 'Literal' &&
   typeof node.value === 'string' &&
   (value === undefined || node.value === value);
 
@@ -53,7 +53,7 @@ const isTemplateLiteral = <V extends string>(
   node: TSESTree.Node,
   value?: V,
 ): node is TemplateLiteral<V> =>
-  node.type === AST_NODE_TYPES.TemplateLiteral &&
+  node.type === 'TemplateLiteral' &&
   node.quasis.length === 1 && // bail out if not simple
   (value === undefined || node.quasis[0].value.raw === value);
 
@@ -116,8 +116,7 @@ export const isIdentifier = <V extends string>(
   node: TSESTree.Node,
   name?: V,
 ): node is KnownIdentifier<V> =>
-  node.type === AST_NODE_TYPES.Identifier &&
-  (name === undefined || node.name === name);
+  node.type === 'Identifier' && (name === undefined || node.name === name);
 
 /**
  * Checks if the given `node` is a "supported accessor".
@@ -160,9 +159,7 @@ export const isSupportedAccessor = <V extends string>(
 export const getAccessorValue = <S extends string = string>(
   accessor: AccessorNode<S>,
 ): S =>
-  accessor.type === AST_NODE_TYPES.Identifier
-    ? accessor.name
-    : getStringValue(accessor);
+  accessor.type === 'Identifier' ? accessor.name : getStringValue(accessor);
 
 export type AccessorNode<Specifics extends string = string> =
   | StringNode<Specifics>

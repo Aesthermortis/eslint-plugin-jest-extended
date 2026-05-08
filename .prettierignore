@@ -1,4 +1,8 @@
-.yarn/*
-lib/*
-coverage/*
+node_modules
+coverage
+dist
+.cache
+docs/rules
+README.md
 CHANGELOG.md
+.github/release-please/manifest.json

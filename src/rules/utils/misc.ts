@@ -1,23 +1,56 @@
-import { parse as parsePath } from 'path';
-import {
-  AST_NODE_TYPES,
-  ESLintUtils,
-  type TSESTree,
-} from '@typescript-eslint/utils';
-import { repository, version } from '../../../package.json';
+import { parse as parsePath } from 'node:path';
+import type { TSESLint, TSESTree } from '@typescript-eslint/utils';
+import type { Rule } from 'eslint';
+import packageJson from '../../../package.json' with { type: 'json' };
 import {
   type AccessorNode,
   getAccessorValue,
   isSupportedAccessor,
-} from './accessors';
-import { followTypeAssertionChain } from './followTypeAssertionChain';
-import type { ParsedExpectFnCall } from './parseJestFnCall';
+} from './accessors.js';
+import { followTypeAssertionChain } from './followTypeAssertionChain.js';
+import type { ParsedExpectFnCall } from './parseJestFnCall.js';
 
-export const createRule = ESLintUtils.RuleCreator(name => {
-  const ruleName = parsePath(name).name;
+interface RuleModuleWithName extends Rule.RuleModule {
+  defaultOptions: unknown[];
+  name: string;
+}
 
-  return `${repository}/blob/v${version}/docs/rules/${ruleName}.md`;
-});
+interface RuleDefinition<Options extends unknown[], MessageIds extends string> {
+  create(
+    context: Readonly<TSESLint.RuleContext<MessageIds, Options>>,
+  ): TSESLint.RuleListener;
+  defaultOptions: Options;
+  meta: Omit<Rule.RuleMetaData, 'messages'> & {
+    messages: Record<MessageIds, string>;
+  };
+  name: string;
+}
+
+export const createRule = <
+  Options extends unknown[],
+  MessageIds extends string,
+>(
+  rule: RuleDefinition<Options, MessageIds>,
+): RuleModuleWithName => {
+  const ruleName = parsePath(rule.name).name;
+  const repositorySource = packageJson.repository as unknown;
+  const repository =
+    typeof repositorySource === 'string'
+      ? repositorySource
+      : (repositorySource as { url: string }).url;
+
+  return {
+    ...rule,
+    create: rule.create as unknown as Rule.RuleModule['create'],
+    meta: {
+      ...rule.meta,
+      docs: {
+        ...rule.meta.docs,
+        url: `${repository}/blob/v${packageJson.version}/docs/rules/${ruleName}.md`,
+      },
+    },
+  } as RuleModuleWithName;
+};
 
 /**
  * Represents a `MemberExpression` with a "known" `property`.
@@ -42,8 +75,9 @@ export interface KnownCallExpression<Name extends string = string>
  *
  * This is `KnownCallExpression` from the perspective of the `MemberExpression` node.
  */
-interface CalledKnownMemberExpression<Name extends string = string>
-  extends KnownMemberExpression<Name> {
+interface CalledKnownMemberExpression<
+  Name extends string = string,
+> extends KnownMemberExpression<Name> {
   parent: KnownCallExpression<Name>;
 }
 
@@ -87,7 +121,7 @@ export const findTopMostCallExpression = (
   let { parent } = node;
 
   while (parent) {
-    if (parent.type === AST_NODE_TYPES.CallExpression) {
+    if (parent.type === 'CallExpression') {
       topMostCallExpression = parent;
 
       parent = parent.parent;
@@ -95,7 +129,7 @@ export const findTopMostCallExpression = (
       continue;
     }
 
-    if (parent.type !== AST_NODE_TYPES.MemberExpression) {
+    if (parent.type !== 'MemberExpression') {
       break;
     }
 
@@ -108,14 +142,14 @@ export const findTopMostCallExpression = (
 export const isBooleanLiteral = (
   node: TSESTree.Node,
 ): node is TSESTree.BooleanLiteral =>
-  node.type === AST_NODE_TYPES.Literal && typeof node.value === 'boolean';
+  node.type === 'Literal' && typeof node.value === 'boolean';
 
 export const getFirstMatcherArg = (
   expectFnCall: ParsedExpectFnCall,
 ): TSESTree.SpreadElement | TSESTree.Expression => {
   const [firstArg] = expectFnCall.args;
 
-  if (firstArg.type === AST_NODE_TYPES.SpreadElement) {
+  if (firstArg.type === 'SpreadElement') {
     return firstArg;
   }
 
@@ -126,7 +160,7 @@ export const isInstanceOfBinaryExpression = (
   node: TSESTree.Node,
   className: string,
 ): node is TSESTree.BinaryExpression =>
-  node.type === AST_NODE_TYPES.BinaryExpression &&
+  node.type === 'BinaryExpression' &&
   node.operator === 'instanceof' &&
   isSupportedAccessor(node.right, className);
 
@@ -160,5 +194,8 @@ export const isBooleanEqualityMatcher = (
 
   const arg = getFirstMatcherArg(expectFnCall);
 
-  return EqualityMatcher.hasOwnProperty(matcherName) && isBooleanLiteral(arg);
+  return (
+    Object.prototype.hasOwnProperty.call(EqualityMatcher, matcherName) &&
+    isBooleanLiteral(arg)
+  );
 };

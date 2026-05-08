@@ -13,8 +13,8 @@
 
 ## Installation
 
-```
-$ yarn add --dev eslint eslint-plugin-jest-extended
+```sh
+npm install --save-dev eslint eslint-plugin-jest-extended
 ```
 
 **Note:** If you installed ESLint globally then you must also install
@@ -22,33 +22,22 @@ $ yarn add --dev eslint eslint-plugin-jest-extended
 
 ## Usage
 
-> [!NOTE]
->
-> `eslint.config.js` is supported, though most of the plugin documentation still
-> currently uses `.eslintrc` syntax.
->
-> Refer to the
-> [ESLint documentation on the new configuration file format](https://eslint.org/docs/latest/use/configure/configuration-files-new)
-> for more.
+Import `eslint-plugin-jest-extended` in your `eslint.config.js` file, then
+configure the rules you want to use.
 
-Add `jest-extended` to the plugins section of your `.eslintrc` configuration
-file. You can omit the `eslint-plugin-` prefix:
+```js
+import jestExtended from 'eslint-plugin-jest-extended';
 
-```json
-{
-  "plugins": ["jest-extended"]
-}
-```
-
-Then configure the rules you want to use under the rules section.
-
-```json
-{
-  "rules": {
-    "jest-extended/prefer-to-be-true": "warn",
-    "jest-extended/prefer-to-be-false": "error"
-  }
-}
+export default [
+  {
+    files: ['**/*.test.js'],
+    plugins: { 'jest-extended': jestExtended },
+    rules: {
+      'jest-extended/prefer-to-be-true': 'warn',
+      'jest-extended/prefer-to-be-false': 'error',
+    },
+  },
+];
 ```
 
 ## Shareable configurations
@@ -61,27 +50,18 @@ patterns, rather than helping to prevent bugs & commonly overlooked traps.
 
 ### All
 
-If you want to enable all rules instead of only some you can do so by adding the
-`all` configuration to your `.eslintrc` config file:
-
-```json
-{
-  "extends": ["plugin:jest-extended/all"]
-}
-```
-
-To enable this configuration with `eslint.config.js`, use
-`jestExtended.configs['flat/all']`:
+If you want to enable all rules instead of only some, use
+`jestExtended.configs.all`:
 
 ```js
-const jestExtended = require('eslint-plugin-jest-extended');
+import jestExtended from 'eslint-plugin-jest-extended';
 
-module.exports = [
+export default [
   {
     files: [
       /* glob matching your test files */
     ],
-    ...jestExtended.configs['flat/all'],
+    ...jestExtended.configs.all,
   },
 ];
 ```
@@ -93,16 +73,22 @@ for installations requiring long-term consistency.
 
 <!-- begin auto-generated rules list -->
 
-🔧 Automatically fixable by the
+💼
+[Configurations](https://github.com/jest-community/eslint-plugin-jest-extended/blob/main/README.md#shareable-configurations)
+enabled in.\
+🌐 Set in the `all`
+[configuration](https://github.com/jest-community/eslint-plugin-jest-extended/blob/main/README.md#shareable-configurations).\
+🔧
+Automatically fixable by the
 [`--fix` CLI option](https://eslint.org/docs/user-guide/command-line-interface#--fix).
 
-| Name                                                                             | Description                            | 🔧  |
-| :------------------------------------------------------------------------------- | :------------------------------------- | :-- |
-| [prefer-to-be-array](docs/rules/prefer-to-be-array.md)                           | Suggest using `toBeArray()`            | 🔧  |
-| [prefer-to-be-false](docs/rules/prefer-to-be-false.md)                           | Suggest using `toBeFalse()`            | 🔧  |
-| [prefer-to-be-object](docs/rules/prefer-to-be-object.md)                         | Suggest using `toBeObject()`           | 🔧  |
-| [prefer-to-be-true](docs/rules/prefer-to-be-true.md)                             | Suggest using `toBeTrue()`             | 🔧  |
-| [prefer-to-have-been-called-once](docs/rules/prefer-to-have-been-called-once.md) | Suggest using `toHaveBeenCalledOnce()` | 🔧  |
+| Name                                                                             | Description                            | 💼  | 🔧  |
+| :------------------------------------------------------------------------------- | :------------------------------------- | :-- | :-- |
+| [prefer-to-be-array](docs/rules/prefer-to-be-array.md)                           | Suggest using `toBeArray()`            | 🌐  | 🔧  |
+| [prefer-to-be-false](docs/rules/prefer-to-be-false.md)                           | Suggest using `toBeFalse()`            | 🌐  | 🔧  |
+| [prefer-to-be-object](docs/rules/prefer-to-be-object.md)                         | Suggest using `toBeObject()`           | 🌐  | 🔧  |
+| [prefer-to-be-true](docs/rules/prefer-to-be-true.md)                             | Suggest using `toBeTrue()`             | 🌐  | 🔧  |
+| [prefer-to-have-been-called-once](docs/rules/prefer-to-have-been-called-once.md) | Suggest using `toHaveBeenCalledOnce()` | 🌐  | 🔧  |
 
 <!-- end auto-generated rules list -->
 

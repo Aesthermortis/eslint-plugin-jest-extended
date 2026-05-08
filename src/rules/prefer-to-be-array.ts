@@ -1,4 +1,4 @@
-import { AST_NODE_TYPES, type TSESTree } from '@typescript-eslint/utils';
+import type { TSESTree } from '@typescript-eslint/utils';
 import {
   createRule,
   followTypeAssertionChain,
@@ -8,13 +8,13 @@ import {
   isParsedInstanceOfMatcherCall,
   isSupportedAccessor,
   parseJestFnCall,
-} from './utils';
+} from './utils/index.js';
 
 const isArrayIsArrayCall = (
   node: TSESTree.Node,
 ): node is TSESTree.CallExpression =>
-  node.type === AST_NODE_TYPES.CallExpression &&
-  node.callee.type === AST_NODE_TYPES.MemberExpression &&
+  node.type === 'CallExpression' &&
+  node.callee.type === 'MemberExpression' &&
   isSupportedAccessor(node.callee.object, 'Array') &&
   isSupportedAccessor(node.callee.property, 'isArray');
 
@@ -22,7 +22,7 @@ export type MessageIds = 'preferToBeArray';
 export type Options = [];
 
 export default createRule<Options, MessageIds>({
-  name: __filename,
+  name: 'prefer-to-be-array',
   meta: {
     docs: {
       description: 'Suggest using `toBeArray()`',
@@ -65,7 +65,7 @@ export default createRule<Options, MessageIds>({
 
         const { parent: expect } = jestFnCall.head.node;
 
-        if (expect?.type !== AST_NODE_TYPES.CallExpression) {
+        if (expect?.type !== 'CallExpression') {
           return;
         }
 
@@ -88,7 +88,7 @@ export default createRule<Options, MessageIds>({
           fix(fixer) {
             const fixes = [
               fixer.replaceText(jestFnCall.matcher, 'toBeArray'),
-              expectArg.type === AST_NODE_TYPES.CallExpression
+              expectArg.type === 'CallExpression'
                 ? fixer.remove(expectArg.callee)
                 : fixer.removeRange([
                     expectArg.left.range[1],
@@ -106,7 +106,7 @@ export default createRule<Options, MessageIds>({
 
               // toBeFalse can't have arguments, so this won't be true beforehand
               invertCondition =
-                matcherArg.type === AST_NODE_TYPES.Literal &&
+                matcherArg.type === 'Literal' &&
                 followTypeAssertionChain(matcherArg).value === false;
             }
 

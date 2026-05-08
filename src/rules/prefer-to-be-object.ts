@@ -1,4 +1,3 @@
-import { AST_NODE_TYPES } from '@typescript-eslint/utils';
 import {
   createRule,
   followTypeAssertionChain,
@@ -7,13 +6,13 @@ import {
   isInstanceOfBinaryExpression,
   isParsedInstanceOfMatcherCall,
   parseJestFnCall,
-} from './utils';
+} from './utils/index.js';
 
 export type MessageIds = 'preferToBeObject';
 export type Options = [];
 
 export default createRule<Options, MessageIds>({
-  name: __filename,
+  name: 'prefer-to-be-object',
   meta: {
     docs: {
       description: 'Suggest using `toBeObject()`',
@@ -56,7 +55,7 @@ export default createRule<Options, MessageIds>({
 
         const { parent: expect } = jestFnCall.head.node;
 
-        if (expect?.type !== AST_NODE_TYPES.CallExpression) {
+        if (expect?.type !== 'CallExpression') {
           return;
         }
 
@@ -89,7 +88,7 @@ export default createRule<Options, MessageIds>({
 
               // toBeFalse can't have arguments, so this won't be true beforehand
               invertCondition =
-                matcherArg.type === AST_NODE_TYPES.Literal &&
+                matcherArg.type === 'Literal' &&
                 followTypeAssertionChain(matcherArg).value === false;
             }
 
