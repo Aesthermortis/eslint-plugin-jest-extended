@@ -2,12 +2,15 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "noEmit": false,
+    "allowJs": false,
+    "checkJs": false,
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "declaration": false,
-    "sourceMap": true
+    "sourceMap": true,
+    "rootDir": "src"
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*.ts"],
   "exclude": [
     "node_modules",
     "dist",
