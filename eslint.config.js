@@ -90,7 +90,24 @@ export default defineConfig([
     files: ["**/*.{test,spec}.{js,jsx,cjs,mjs,ts,tsx,cts,mts}", "**/jest.setup.js"],
     extends: [jest.configs["flat/recommended"], jest.configs["flat/style"]],
     languageOptions: {
-      globals: { ...globals.jest, ...globals.es2025, ...globals.node },
+      globals: { ...globals.jest },
+    },
+  },
+
+  {
+    name: "Disallow tests in src",
+    files: [
+      "src/**/*.{test,spec}.{js,jsx,cjs,mjs,ts,tsx,cts,mts}",
+      "src/**/__tests__/**/*.{js,jsx,cjs,mjs,ts,tsx,cts,mts}",
+    ],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          message: "Tests are not allowed inside src/. Use the top-level __tests__/ folder.",
+          selector: "Program",
+        },
+      ],
     },
   },
 

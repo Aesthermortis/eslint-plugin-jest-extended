@@ -4,7 +4,7 @@ const config = {
   restoreMocks: true,
   resetMocks: true,
 
-  collectCoverageFrom: ["src/**/*.ts", "!src/**/*.test.ts", "!src/**/__tests__/**"],
+  collectCoverageFrom: ["src/**/*.ts"],
 
   coverageThreshold: {
     global: {
