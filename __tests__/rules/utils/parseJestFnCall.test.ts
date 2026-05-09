@@ -1,7 +1,7 @@
-import type { TSESTree } from '@typescript-eslint/utils';
-import dedent from 'dedent';
-import tseslint from 'typescript-eslint';
-import { RuleTester } from 'eslint';
+import type { TSESTree } from "@typescript-eslint/utils";
+import dedent from "dedent";
+import tseslint from "typescript-eslint";
+import { RuleTester } from "eslint";
 import {
   type ParsedJestFnCall,
   type ResolvedJestFnWithNode,
@@ -9,12 +9,12 @@ import {
   getAccessorValue,
   isSupportedAccessor,
   parseJestFnCall,
-} from '../../../src/rules/utils/index.js';
+} from "../../../src/rules/utils/index.js";
 
 const ruleTester = new RuleTester({
   languageOptions: {
     ecmaVersion: 2024,
-    sourceType: 'module',
+    sourceType: "module",
   },
 });
 
@@ -22,32 +22,32 @@ const typescriptRuleTester = new RuleTester({
   languageOptions: {
     parser: tseslint.parser,
     ecmaVersion: 2024,
-    sourceType: 'module',
+    sourceType: "module",
   },
 });
 
 const isNode = (obj: unknown): obj is TSESTree.Node => {
-  if (typeof obj === 'object' && obj !== null) {
-    return ['type', 'loc', 'range', 'parent'].every(p => p in obj);
+  if (typeof obj === "object" && obj !== null) {
+    return ["type", "loc", "range", "parent"].every((p) => p in obj);
   }
 
   return false;
 };
 
 const rule = createRule({
-  name: 'parse-jest-fn-call-test',
+  name: "parse-jest-fn-call-test",
   meta: {
     docs: {
-      description: 'Fake rule for testing parseJestFnCall',
+      description: "Fake rule for testing parseJestFnCall",
     },
     messages: {
-      details: '{{ data }}',
+      details: "{{ data }}",
     },
     schema: [],
-    type: 'problem',
+    type: "problem",
   },
   defaultOptions: [],
-  create: context => ({
+  create: (context) => ({
     CallExpression(node) {
       const jestFnCall = parseJestFnCall(node, context);
 
@@ -61,7 +61,7 @@ const rule = createRule({
         };
 
         context.report({
-          messageId: 'details',
+          messageId: "details",
           node,
           data: {
             data: JSON.stringify(sorted, (_key, value) => {
@@ -82,17 +82,11 @@ const rule = createRule({
   }),
 });
 
-interface TestResolvedJestFnWithNode extends Omit<
-  ResolvedJestFnWithNode,
-  'node'
-> {
+interface TestResolvedJestFnWithNode extends Omit<ResolvedJestFnWithNode, "node"> {
   node: string;
 }
 
-interface TestParsedJestFnCall extends Omit<
-  ParsedJestFnCall,
-  'head' | 'members'
-> {
+interface TestParsedJestFnCall extends Omit<ParsedJestFnCall, "head" | "members"> {
   head: TestResolvedJestFnWithNode;
   members: string[];
 }
@@ -108,31 +102,31 @@ const expectedParsedJestFnCallResultData = (result: TestParsedJestFnCall) => ({
   }),
 });
 
-ruleTester.run('nonexistent methods', rule, {
+ruleTester.run("nonexistent methods", rule, {
   valid: [
-    'describe.something()',
-    'describe.me()',
-    'test.me()',
-    'it.fails()',
-    'context()',
-    'context.each``()',
-    'context.each()',
-    'describe.context()',
-    'describe.concurrent()()',
-    'describe.concurrent``()',
-    'describe.every``()',
-    '/regex/.test()',
+    "describe.something()",
+    "describe.me()",
+    "test.me()",
+    "it.fails()",
+    "context()",
+    "context.each``()",
+    "context.each()",
+    "describe.context()",
+    "describe.concurrent()()",
+    "describe.concurrent``()",
+    "describe.every``()",
+    "/regex/.test()",
     '"something".describe()',
-    '[].describe()',
-    'new describe().only()',
-    '``.test()',
-    'test.only``()',
-    'test``.only()',
+    "[].describe()",
+    "new describe().only()",
+    "``.test()",
+    "test.only``()",
+    "test``.only()",
   ],
   invalid: [],
 });
 
-ruleTester.run('expect', rule, {
+ruleTester.run("expect", rule, {
   valid: [
     {
       code: dedent`
@@ -176,20 +170,20 @@ ruleTester.run('expect', rule, {
   ],
   invalid: [
     {
-      code: 'expect(x).toBe(y);',
+      code: "expect(x).toBe(y);",
       errors: [
         {
-          messageId: 'details' as const,
+          messageId: "details" as const,
           data: expectedParsedJestFnCallResultData({
-            name: 'expect',
-            type: 'expect',
+            name: "expect",
+            type: "expect",
             head: {
               original: null,
-              local: 'expect',
-              type: 'global',
-              node: 'expect',
+              local: "expect",
+              type: "global",
+              node: "expect",
             },
-            members: ['toBe'],
+            members: ["toBe"],
           }),
           column: 1,
           line: 1,
@@ -204,17 +198,17 @@ ruleTester.run('expect', rule, {
       `,
       errors: [
         {
-          messageId: 'details' as const,
+          messageId: "details" as const,
           data: expectedParsedJestFnCallResultData({
-            name: 'expect',
-            type: 'expect',
+            name: "expect",
+            type: "expect",
             head: {
-              original: 'expect',
-              local: 'expect',
-              type: 'import',
-              node: 'expect',
+              original: "expect",
+              local: "expect",
+              type: "import",
+              node: "expect",
             },
-            members: ['assertions'],
+            members: ["assertions"],
           }),
           column: 1,
           line: 3,
@@ -229,17 +223,17 @@ ruleTester.run('expect', rule, {
       `,
       errors: [
         {
-          messageId: 'details' as const,
+          messageId: "details" as const,
           data: expectedParsedJestFnCallResultData({
-            name: 'expect',
-            type: 'expect',
+            name: "expect",
+            type: "expect",
             head: {
-              original: 'expect',
-              local: 'expect',
-              type: 'import',
-              node: 'expect',
+              original: "expect",
+              local: "expect",
+              type: "import",
+              node: "expect",
             },
-            members: ['toBe'],
+            members: ["toBe"],
           }),
           column: 1,
           line: 3,
@@ -254,17 +248,17 @@ ruleTester.run('expect', rule, {
       `,
       errors: [
         {
-          messageId: 'details' as const,
+          messageId: "details" as const,
           data: expectedParsedJestFnCallResultData({
-            name: 'expect',
-            type: 'expect',
+            name: "expect",
+            type: "expect",
             head: {
-              original: 'expect',
-              local: 'expect',
-              type: 'import',
-              node: 'expect',
+              original: "expect",
+              local: "expect",
+              type: "import",
+              node: "expect",
             },
-            members: ['not'],
+            members: ["not"],
           }),
           column: 1,
           line: 3,
@@ -279,17 +273,17 @@ ruleTester.run('expect', rule, {
       `,
       errors: [
         {
-          messageId: 'details' as const,
+          messageId: "details" as const,
           data: expectedParsedJestFnCallResultData({
-            name: 'expect',
-            type: 'expect',
+            name: "expect",
+            type: "expect",
             head: {
-              original: 'expect',
-              local: 'expect',
-              type: 'import',
-              node: 'expect',
+              original: "expect",
+              local: "expect",
+              type: "import",
+              node: "expect",
             },
-            members: ['not', 'toBe'],
+            members: ["not", "toBe"],
           }),
           column: 1,
           line: 3,
@@ -307,65 +301,65 @@ ruleTester.run('expect', rule, {
       `,
       errors: [
         {
-          messageId: 'details' as const,
+          messageId: "details" as const,
           data: expectedParsedJestFnCallResultData({
-            name: 'expect',
-            type: 'expect',
+            name: "expect",
+            type: "expect",
             head: {
-              original: 'expect',
-              local: 'expect',
-              type: 'import',
-              node: 'expect',
+              original: "expect",
+              local: "expect",
+              type: "import",
+              node: "expect",
             },
-            members: ['assertions'],
+            members: ["assertions"],
           }),
           column: 1,
           line: 3,
         },
         {
-          messageId: 'details' as const,
+          messageId: "details" as const,
           data: expectedParsedJestFnCallResultData({
-            name: 'expect',
-            type: 'expect',
+            name: "expect",
+            type: "expect",
             head: {
-              original: 'expect',
-              local: 'expect',
-              type: 'import',
-              node: 'expect',
+              original: "expect",
+              local: "expect",
+              type: "import",
+              node: "expect",
             },
-            members: ['hasAssertions'],
+            members: ["hasAssertions"],
           }),
           column: 1,
           line: 4,
         },
         {
-          messageId: 'details' as const,
+          messageId: "details" as const,
           data: expectedParsedJestFnCallResultData({
-            name: 'expect',
-            type: 'expect',
+            name: "expect",
+            type: "expect",
             head: {
-              original: 'expect',
-              local: 'expect',
-              type: 'import',
-              node: 'expect',
+              original: "expect",
+              local: "expect",
+              type: "import",
+              node: "expect",
             },
-            members: ['anything'],
+            members: ["anything"],
           }),
           column: 1,
           line: 5,
         },
         {
-          messageId: 'details' as const,
+          messageId: "details" as const,
           data: expectedParsedJestFnCallResultData({
-            name: 'expect',
-            type: 'expect',
+            name: "expect",
+            type: "expect",
             head: {
-              original: 'expect',
-              local: 'expect',
-              type: 'import',
-              node: 'expect',
+              original: "expect",
+              local: "expect",
+              type: "import",
+              node: "expect",
             },
-            members: ['not', 'arrayContaining'],
+            members: ["not", "arrayContaining"],
           }),
           column: 1,
           line: 6,
@@ -375,7 +369,7 @@ ruleTester.run('expect', rule, {
   ],
 });
 
-ruleTester.run('esm', rule, {
+ruleTester.run("esm", rule, {
   valid: [
     {
       code: dedent`
@@ -436,7 +430,7 @@ ruleTester.run('esm', rule, {
   invalid: [],
 });
 
-ruleTester.run('esm (dynamic)', rule, {
+ruleTester.run("esm (dynamic)", rule, {
   valid: [
     {
       code: dedent`
@@ -462,15 +456,15 @@ ruleTester.run('esm (dynamic)', rule, {
       `,
       errors: [
         {
-          messageId: 'details' as const,
+          messageId: "details" as const,
           data: expectedParsedJestFnCallResultData({
-            name: 'it',
-            type: 'test',
+            name: "it",
+            type: "test",
             head: {
-              original: 'it',
-              local: 'it',
-              type: 'import',
-              node: 'it',
+              original: "it",
+              local: "it",
+              type: "import",
+              node: "it",
             },
             members: [],
           }),
@@ -487,15 +481,15 @@ ruleTester.run('esm (dynamic)', rule, {
       `,
       errors: [
         {
-          messageId: 'details' as const,
+          messageId: "details" as const,
           data: expectedParsedJestFnCallResultData({
-            name: 'it',
-            type: 'test',
+            name: "it",
+            type: "test",
             head: {
-              original: 'it',
-              local: 'it',
-              type: 'import',
-              node: 'it',
+              original: "it",
+              local: "it",
+              type: "import",
+              node: "it",
             },
             members: [],
           }),
@@ -507,11 +501,11 @@ ruleTester.run('esm (dynamic)', rule, {
   ],
 });
 
-ruleTester.run('global aliases', rule, {
+ruleTester.run("global aliases", rule, {
   valid: [
     {
       code: 'xcontext("skip this please", () => {});',
-      settings: { jest: { globalAliases: { describe: ['context'] } } },
+      settings: { jest: { globalAliases: { describe: ["context"] } } },
     },
   ],
   invalid: [
@@ -519,15 +513,15 @@ ruleTester.run('global aliases', rule, {
       code: 'context("when there is an error", () => {})',
       errors: [
         {
-          messageId: 'details' as const,
+          messageId: "details" as const,
           data: expectedParsedJestFnCallResultData({
-            name: 'describe',
-            type: 'describe',
+            name: "describe",
+            type: "describe",
             head: {
-              original: 'describe',
-              local: 'context',
-              type: 'global',
-              node: 'context',
+              original: "describe",
+              local: "context",
+              type: "global",
+              node: "context",
             },
             members: [],
           }),
@@ -535,29 +529,29 @@ ruleTester.run('global aliases', rule, {
           line: 1,
         },
       ],
-      settings: { jest: { globalAliases: { describe: ['context'] } } },
+      settings: { jest: { globalAliases: { describe: ["context"] } } },
     },
     {
       code: 'context.skip("when there is an error", () => {})',
       errors: [
         {
-          messageId: 'details' as const,
+          messageId: "details" as const,
           data: expectedParsedJestFnCallResultData({
-            name: 'describe',
-            type: 'describe',
+            name: "describe",
+            type: "describe",
             head: {
-              original: 'describe',
-              local: 'context',
-              type: 'global',
-              node: 'context',
+              original: "describe",
+              local: "context",
+              type: "global",
+              node: "context",
             },
-            members: ['skip'],
+            members: ["skip"],
           }),
           column: 1,
           line: 1,
         },
       ],
-      settings: { jest: { globalAliases: { describe: ['context'] } } },
+      settings: { jest: { globalAliases: { describe: ["context"] } } },
     },
     {
       code: dedent`
@@ -566,15 +560,15 @@ ruleTester.run('global aliases', rule, {
       `,
       errors: [
         {
-          messageId: 'details' as const,
+          messageId: "details" as const,
           data: expectedParsedJestFnCallResultData({
-            name: 'xdescribe',
-            type: 'describe',
+            name: "xdescribe",
+            type: "describe",
             head: {
-              original: 'xdescribe',
-              local: 'xcontext',
-              type: 'global',
-              node: 'xcontext',
+              original: "xdescribe",
+              local: "xcontext",
+              type: "global",
+              node: "xcontext",
             },
             members: [],
           }),
@@ -582,7 +576,7 @@ ruleTester.run('global aliases', rule, {
           line: 2,
         },
       ],
-      settings: { jest: { globalAliases: { xdescribe: ['xcontext'] } } },
+      settings: { jest: { globalAliases: { xdescribe: ["xcontext"] } } },
     },
     {
       code: dedent`
@@ -592,15 +586,15 @@ ruleTester.run('global aliases', rule, {
       `,
       errors: [
         {
-          messageId: 'details' as const,
+          messageId: "details" as const,
           data: expectedParsedJestFnCallResultData({
-            name: 'describe',
-            type: 'describe',
+            name: "describe",
+            type: "describe",
             head: {
-              original: 'describe',
-              local: 'context',
-              type: 'global',
-              node: 'context',
+              original: "describe",
+              local: "context",
+              type: "global",
+              node: "context",
             },
             members: [],
           }),
@@ -608,15 +602,15 @@ ruleTester.run('global aliases', rule, {
           line: 1,
         },
         {
-          messageId: 'details' as const,
+          messageId: "details" as const,
           data: expectedParsedJestFnCallResultData({
-            name: 'describe',
-            type: 'describe',
+            name: "describe",
+            type: "describe",
             head: {
               original: null,
-              local: 'describe',
-              type: 'global',
-              node: 'describe',
+              local: "describe",
+              type: "global",
+              node: "describe",
             },
             members: [],
           }),
@@ -624,12 +618,12 @@ ruleTester.run('global aliases', rule, {
           line: 2,
         },
       ],
-      settings: { jest: { globalAliases: { describe: ['context'] } } },
+      settings: { jest: { globalAliases: { describe: ["context"] } } },
     },
   ],
 });
 
-ruleTester.run('global package source', rule, {
+ruleTester.run("global package source", rule, {
   valid: [
     {
       code: dedent`
@@ -637,7 +631,7 @@ ruleTester.run('global package source', rule, {
 
         expect(x).toBe(y);
       `,
-      settings: { jest: { globalPackage: '@jest/globals' } },
+      settings: { jest: { globalPackage: "@jest/globals" } },
     },
     {
       code: dedent`
@@ -645,7 +639,7 @@ ruleTester.run('global package source', rule, {
 
         it('is not considered a test function', () => {});
       `,
-      settings: { jest: { globalPackage: 'bun:test' } },
+      settings: { jest: { globalPackage: "bun:test" } },
     },
     {
       code: dedent`
@@ -653,31 +647,31 @@ ruleTester.run('global package source', rule, {
 
         it('is not considered a test function', () => {});
       `,
-      settings: { jest: { globalPackage: 'bun:test' } },
+      settings: { jest: { globalPackage: "bun:test" } },
     },
   ],
   invalid: [
     {
-      code: 'expect(x).toBe(y);',
+      code: "expect(x).toBe(y);",
       errors: [
         {
-          messageId: 'details' as const,
+          messageId: "details" as const,
           data: expectedParsedJestFnCallResultData({
-            name: 'expect',
-            type: 'expect',
+            name: "expect",
+            type: "expect",
             head: {
               original: null,
-              local: 'expect',
-              type: 'global',
-              node: 'expect',
+              local: "expect",
+              type: "global",
+              node: "expect",
             },
-            members: ['toBe'],
+            members: ["toBe"],
           }),
           column: 1,
           line: 1,
         },
       ],
-      settings: { jest: { globalPackage: 'bun:test' } },
+      settings: { jest: { globalPackage: "bun:test" } },
     },
     {
       code: dedent`
@@ -691,15 +685,15 @@ ruleTester.run('global package source', rule, {
       `,
       errors: [
         {
-          messageId: 'details' as const,
+          messageId: "details" as const,
           data: expectedParsedJestFnCallResultData({
-            name: 'describe',
-            type: 'describe',
+            name: "describe",
+            type: "describe",
             head: {
-              original: 'describe',
-              local: 'describe',
-              type: 'import',
-              node: 'describe',
+              original: "describe",
+              local: "describe",
+              type: "import",
+              node: "describe",
             },
             members: [],
           }),
@@ -707,15 +701,15 @@ ruleTester.run('global package source', rule, {
           line: 3,
         },
         {
-          messageId: 'details' as const,
+          messageId: "details" as const,
           data: expectedParsedJestFnCallResultData({
-            name: 'it',
-            type: 'test',
+            name: "it",
+            type: "test",
             head: {
-              original: 'it',
-              local: 'it',
-              type: 'import',
-              node: 'it',
+              original: "it",
+              local: "it",
+              type: "import",
+              node: "it",
             },
             members: [],
           }),
@@ -723,23 +717,23 @@ ruleTester.run('global package source', rule, {
           line: 4,
         },
         {
-          messageId: 'details' as const,
+          messageId: "details" as const,
           data: expectedParsedJestFnCallResultData({
-            name: 'expect',
-            type: 'expect',
+            name: "expect",
+            type: "expect",
             head: {
-              original: 'expect',
-              local: 'expect',
-              type: 'import',
-              node: 'expect',
+              original: "expect",
+              local: "expect",
+              type: "import",
+              node: "expect",
             },
-            members: ['assertions'],
+            members: ["assertions"],
           }),
           column: 5,
           line: 5,
         },
       ],
-      settings: { jest: { globalPackage: 'bun:test' } },
+      settings: { jest: { globalPackage: "bun:test" } },
     },
     {
       code: dedent`
@@ -749,37 +743,37 @@ ruleTester.run('global package source', rule, {
       `,
       errors: [
         {
-          messageId: 'details' as const,
+          messageId: "details" as const,
           data: expectedParsedJestFnCallResultData({
-            name: 'expect',
-            type: 'expect',
+            name: "expect",
+            type: "expect",
             head: {
-              original: 'expect',
-              local: 'expect',
-              type: 'import',
-              node: 'expect',
+              original: "expect",
+              local: "expect",
+              type: "import",
+              node: "expect",
             },
-            members: ['not', 'toBe'],
+            members: ["not", "toBe"],
           }),
           column: 1,
           line: 3,
         },
       ],
-      settings: { jest: { globalPackage: 'bun:test' } },
+      settings: { jest: { globalPackage: "bun:test" } },
     },
     {
       code: 'context("when there is an error", () => {})',
       errors: [
         {
-          messageId: 'details' as const,
+          messageId: "details" as const,
           data: expectedParsedJestFnCallResultData({
-            name: 'describe',
-            type: 'describe',
+            name: "describe",
+            type: "describe",
             head: {
-              original: 'describe',
-              local: 'context',
-              type: 'global',
-              node: 'context',
+              original: "describe",
+              local: "context",
+              type: "global",
+              node: "context",
             },
             members: [],
           }),
@@ -789,15 +783,15 @@ ruleTester.run('global package source', rule, {
       ],
       settings: {
         jest: {
-          globalPackage: 'bun:test',
-          globalAliases: { describe: ['context'] },
+          globalPackage: "bun:test",
+          globalAliases: { describe: ["context"] },
         },
       },
     },
   ],
 });
 
-typescriptRuleTester.run('typescript', rule, {
+typescriptRuleTester.run("typescript", rule, {
   valid: [
     {
       code: dedent`
@@ -863,15 +857,15 @@ typescriptRuleTester.run('typescript', rule, {
       `,
       errors: [
         {
-          messageId: 'details' as const,
+          messageId: "details" as const,
           data: expectedParsedJestFnCallResultData({
-            name: 'it',
-            type: 'test',
+            name: "it",
+            type: "test",
             head: {
-              original: 'it',
-              local: 'jestIt',
-              type: 'import',
-              node: 'jestIt',
+              original: "it",
+              local: "jestIt",
+              type: "import",
+              node: "jestIt",
             },
             members: [],
           }),
@@ -883,27 +877,27 @@ typescriptRuleTester.run('typescript', rule, {
   ],
 });
 
-ruleTester.run('misc', rule, {
+ruleTester.run("misc", rule, {
   valid: [
     'import { spyOn } from "actions"; spyOn("foo")',
-    'test().finally()',
-    'expect(true).not.not.toBeDefined();',
-    'expect(true).resolves.not.exactly.toBeDefined();',
+    "test().finally()",
+    "expect(true).not.not.toBeDefined();",
+    "expect(true).resolves.not.exactly.toBeDefined();",
   ],
   invalid: [
     {
-      code: 'beforeEach(() => {});',
+      code: "beforeEach(() => {});",
       errors: [
         {
-          messageId: 'details' as const,
+          messageId: "details" as const,
           data: expectedParsedJestFnCallResultData({
-            name: 'beforeEach',
-            type: 'hook',
+            name: "beforeEach",
+            type: "hook",
             head: {
               original: null,
-              local: 'beforeEach',
-              type: 'global',
-              node: 'beforeEach',
+              local: "beforeEach",
+              type: "global",
+              node: "beforeEach",
             },
             members: [],
           }),
@@ -916,17 +910,17 @@ ruleTester.run('misc', rule, {
       code: 'jest.spyOn(console, "log");',
       errors: [
         {
-          messageId: 'details' as const,
+          messageId: "details" as const,
           data: expectedParsedJestFnCallResultData({
-            name: 'jest',
-            type: 'jest',
+            name: "jest",
+            type: "jest",
             head: {
               original: null,
-              local: 'jest',
-              type: 'global',
-              node: 'jest',
+              local: "jest",
+              type: "global",
+              node: "jest",
             },
-            members: ['spyOn'],
+            members: ["spyOn"],
           }),
           column: 1,
           line: 1,
@@ -945,15 +939,15 @@ ruleTester.run('misc', rule, {
       `,
       errors: [
         {
-          messageId: 'details' as const,
+          messageId: "details" as const,
           data: expectedParsedJestFnCallResultData({
-            name: 'test',
-            type: 'test',
+            name: "test",
+            type: "test",
             head: {
               original: null,
-              local: 'test',
-              type: 'global',
-              node: 'test',
+              local: "test",
+              type: "global",
+              node: "test",
             },
             members: [],
           }),
@@ -961,17 +955,17 @@ ruleTester.run('misc', rule, {
           line: 1,
         },
         {
-          messageId: 'details' as const,
+          messageId: "details" as const,
           data: expectedParsedJestFnCallResultData({
-            name: 'expect',
-            type: 'expect',
+            name: "expect",
+            type: "expect",
             head: {
               original: null,
-              local: 'expect',
-              type: 'global',
-              node: 'expect',
+              local: "expect",
+              type: "global",
+              node: "expect",
             },
-            members: ['toBe'],
+            members: ["toBe"],
           }),
           column: 3,
           line: 6,

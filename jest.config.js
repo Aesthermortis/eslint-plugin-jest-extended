@@ -1,14 +1,10 @@
-/** @type {import('jest').Config} */
+/** @type {import("jest").Config} */
 const config = {
   clearMocks: true,
   restoreMocks: true,
   resetMocks: true,
 
-  collectCoverageFrom: [
-    'src/**/*.ts',
-    '!src/**/*.test.ts',
-    '!src/**/__tests__/**',
-  ],
+  collectCoverageFrom: ["src/**/*.ts", "!src/**/*.test.ts", "!src/**/__tests__/**"],
 
   coverageThreshold: {
     global: {
@@ -20,24 +16,24 @@ const config = {
   },
 
   moduleNameMapper: {
-    '^(\\.{1,2}/.*)\\.js$': '$1',
+    "^(\\.{1,2}/.*)\\.js$": "$1",
   },
 
-  testPathIgnorePatterns: ['<rootDir>/dist/.*'],
+  testPathIgnorePatterns: ["<rootDir>/dist/.*"],
 
-  extensionsToTreatAsEsm: ['.ts'],
+  extensionsToTreatAsEsm: [".ts"],
 
   transform: {
-    '^.+\\.tsx?$': [
-      'ts-jest',
+    "^.+\\.tsx?$": [
+      "ts-jest",
       {
         useESM: true,
-        tsconfig: './tsconfig.json',
+        tsconfig: "./tsconfig.json",
       },
     ],
   },
 
-  coveragePathIgnorePatterns: ['/node_modules/', '/dist/'],
+  coveragePathIgnorePatterns: ["/node_modules/", "/dist/"],
 };
 
 export default config;

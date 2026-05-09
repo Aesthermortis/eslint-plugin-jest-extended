@@ -1,13 +1,13 @@
-import packageJson from '../package.json' with { type: 'json' };
-import allRules from './configs/all.js';
-import rules from './rules/index.js';
+import packageJson from "../package.json" with { type: "json" };
+import allRules from "./configs/all.js";
+import rules from "./rules/index.js";
 
-const namespace = 'jest-extended';
+const namespace = "jest-extended";
 
 const plugin = {
   meta: {
     name: packageJson.name,
-    namespace: 'jest-extended',
+    namespace: "jest-extended",
     version: packageJson.version,
   },
   configs: {},

@@ -1,4 +1,4 @@
-import type { TSESLint, TSESTree } from '@typescript-eslint/utils';
+import type { TSESLint, TSESTree } from "@typescript-eslint/utils";
 import {
   type AccessorNode,
   getAccessorValue,
@@ -6,7 +6,7 @@ import {
   isIdentifier,
   isStringNode,
   isSupportedAccessor,
-} from './accessors.js';
+} from "./accessors.js";
 import {
   DescribeAlias,
   HookName,
@@ -14,12 +14,10 @@ import {
   ModifierName,
   TestCaseName,
   findTopMostCallExpression,
-} from './misc.js';
+} from "./misc.js";
 
-const joinChains = (
-  a: AccessorNode[] | null,
-  b: AccessorNode[] | null,
-): AccessorNode[] | null => (a && b ? [...a, ...b] : null);
+const joinChains = (a: AccessorNode[] | null, b: AccessorNode[] | null): AccessorNode[] | null =>
+  a && b ? [...a, ...b] : null;
 
 export function getNodeChain(node: TSESTree.Node): AccessorNode[] | null {
   if (isSupportedAccessor(node)) {
@@ -27,11 +25,11 @@ export function getNodeChain(node: TSESTree.Node): AccessorNode[] | null {
   }
 
   switch (node.type) {
-    case 'TaggedTemplateExpression':
+    case "TaggedTemplateExpression":
       return getNodeChain(node.tag);
-    case 'MemberExpression':
+    case "MemberExpression":
       return joinChains(getNodeChain(node.object), getNodeChain(node.property));
-    case 'CallExpression':
+    case "CallExpression":
       return getNodeChain(node.callee);
   }
 
@@ -42,32 +40,32 @@ export interface ResolvedJestFnWithNode extends ResolvedJestFn {
   node: AccessorNode;
 }
 
-type JestFnType = 'hook' | 'describe' | 'test' | 'expect' | 'jest' | 'unknown';
+type JestFnType = "hook" | "describe" | "test" | "expect" | "jest" | "unknown";
 
 const determineJestFnType = (name: string): JestFnType => {
-  if (name === 'expect') {
-    return 'expect';
+  if (name === "expect") {
+    return "expect";
   }
 
-  if (name === 'jest') {
-    return 'jest';
+  if (name === "jest") {
+    return "jest";
   }
 
   if (Object.prototype.hasOwnProperty.call(DescribeAlias, name)) {
-    return 'describe';
+    return "describe";
   }
 
   if (Object.prototype.hasOwnProperty.call(TestCaseName, name)) {
-    return 'test';
+    return "test";
   }
 
   /* istanbul ignore else */
   if (Object.prototype.hasOwnProperty.call(HookName, name)) {
-    return 'hook';
+    return "hook";
   }
 
   /* istanbul ignore next */
-  return 'unknown';
+  return "unknown";
 };
 
 interface BaseParsedJestFnCall {
@@ -82,85 +80,84 @@ interface BaseParsedJestFnCall {
 }
 
 interface ParsedGeneralJestFnCall extends BaseParsedJestFnCall {
-  type: Exclude<JestFnType, 'expect'>;
+  type: Exclude<JestFnType, "expect">;
 }
 
-export interface ParsedExpectFnCall
-  extends BaseParsedJestFnCall, ModifiersAndMatcher {
-  type: 'expect';
+export interface ParsedExpectFnCall extends BaseParsedJestFnCall, ModifiersAndMatcher {
+  type: "expect";
 }
 
 export type ParsedJestFnCall = ParsedGeneralJestFnCall | ParsedExpectFnCall;
 
 const ValidJestFnCallChains = [
-  'afterAll',
-  'afterEach',
-  'beforeAll',
-  'beforeEach',
-  'describe',
-  'describe.each',
-  'describe.only',
-  'describe.only.each',
-  'describe.skip',
-  'describe.skip.each',
-  'fdescribe',
-  'fdescribe.each',
-  'xdescribe',
-  'xdescribe.each',
-  'it',
-  'it.concurrent',
-  'it.concurrent.failing',
-  'it.concurrent.each',
-  'it.concurrent.failing.each',
-  'it.concurrent.failing.only.each',
-  'it.concurrent.failing.skip.each',
-  'it.concurrent.only.each',
-  'it.concurrent.skip.each',
-  'it.each',
-  'it.failing',
-  'it.failing.each',
-  'it.only',
-  'it.only.each',
-  'it.only.failing',
-  'it.only.failing.each',
-  'it.skip',
-  'it.skip.each',
-  'it.skip.failing',
-  'it.skip.failing.each',
-  'it.todo',
-  'fit',
-  'fit.each',
-  'fit.failing',
-  'fit.failing.each',
-  'xit',
-  'xit.each',
-  'xit.failing',
-  'xit.failing.each',
-  'test',
-  'test.concurrent',
-  'test.concurrent.failing',
-  'test.concurrent.each',
-  'test.concurrent.failing.each',
-  'test.concurrent.failing.only.each',
-  'test.concurrent.failing.skip.each',
-  'test.concurrent.only.each',
-  'test.concurrent.skip.each',
-  'test.each',
-  'test.failing',
-  'test.failing.each',
-  'test.only',
-  'test.only.each',
-  'test.only.failing',
-  'test.only.failing.each',
-  'test.skip',
-  'test.skip.each',
-  'test.skip.failing',
-  'test.skip.failing.each',
-  'test.todo',
-  'xtest',
-  'xtest.each',
-  'xtest.failing',
-  'xtest.failing.each',
+  "afterAll",
+  "afterEach",
+  "beforeAll",
+  "beforeEach",
+  "describe",
+  "describe.each",
+  "describe.only",
+  "describe.only.each",
+  "describe.skip",
+  "describe.skip.each",
+  "fdescribe",
+  "fdescribe.each",
+  "xdescribe",
+  "xdescribe.each",
+  "it",
+  "it.concurrent",
+  "it.concurrent.failing",
+  "it.concurrent.each",
+  "it.concurrent.failing.each",
+  "it.concurrent.failing.only.each",
+  "it.concurrent.failing.skip.each",
+  "it.concurrent.only.each",
+  "it.concurrent.skip.each",
+  "it.each",
+  "it.failing",
+  "it.failing.each",
+  "it.only",
+  "it.only.each",
+  "it.only.failing",
+  "it.only.failing.each",
+  "it.skip",
+  "it.skip.each",
+  "it.skip.failing",
+  "it.skip.failing.each",
+  "it.todo",
+  "fit",
+  "fit.each",
+  "fit.failing",
+  "fit.failing.each",
+  "xit",
+  "xit.each",
+  "xit.failing",
+  "xit.failing.each",
+  "test",
+  "test.concurrent",
+  "test.concurrent.failing",
+  "test.concurrent.each",
+  "test.concurrent.failing.each",
+  "test.concurrent.failing.only.each",
+  "test.concurrent.failing.skip.each",
+  "test.concurrent.only.each",
+  "test.concurrent.skip.each",
+  "test.each",
+  "test.failing",
+  "test.failing.each",
+  "test.only",
+  "test.only.each",
+  "test.only.failing",
+  "test.only.failing.each",
+  "test.skip",
+  "test.skip.each",
+  "test.skip.failing",
+  "test.skip.failing.each",
+  "test.todo",
+  "xtest",
+  "xtest.each",
+  "xtest.failing",
+  "xtest.failing.each",
 ];
 
 // todo: switch back to using declaration merging once https://github.com/typescript-eslint/typescript-eslint/pull/8485
@@ -177,12 +174,9 @@ const resolvePossibleAliasedGlobal = (
   global: string,
   context: TSESLint.RuleContext<string, unknown[]>,
 ) => {
-  const globalAliases =
-    (context.settings as SharedConfigurationSettings).jest?.globalAliases ?? {};
+  const globalAliases = (context.settings as SharedConfigurationSettings).jest?.globalAliases ?? {};
 
-  const alias = Object.entries(globalAliases).find(([, aliases]) =>
-    aliases.includes(global),
-  );
+  const alias = Object.entries(globalAliases).find(([, aliases]) => aliases.includes(global));
 
   if (alias) {
     return alias[0];
@@ -202,7 +196,7 @@ export const parseJestFnCall = (
 ): ParsedJestFnCall | null => {
   const jestFnCall = parseJestFnCallWithReason(node, context);
 
-  if (typeof jestFnCall === 'string') {
+  if (typeof jestFnCall === "string") {
     return null;
   }
 
@@ -242,16 +236,13 @@ const parseJestFnCallWithReasonInner = (
   const lastLink = getAccessorValue(chain[chain.length - 1]);
 
   // if we're an `each()`, ensure we're the outer CallExpression (i.e `.each()()`)
-  if (lastLink === 'each') {
-    if (
-      node.callee.type !== 'CallExpression' &&
-      node.callee.type !== 'TaggedTemplateExpression'
-    ) {
+  if (lastLink === "each") {
+    if (node.callee.type !== "CallExpression" && node.callee.type !== "TaggedTemplateExpression") {
       return null;
     }
   }
 
-  if (node.callee.type === 'TaggedTemplateExpression' && lastLink !== 'each') {
+  if (node.callee.type === "TaggedTemplateExpression" && lastLink !== "each") {
     return null;
   }
 
@@ -264,17 +255,13 @@ const parseJestFnCallWithReasonInner = (
 
   const name = resolved.original ?? resolved.local;
 
-  const links = [name, ...rest.map(link => getAccessorValue(link))];
+  const links = [name, ...rest.map((link) => getAccessorValue(link))];
 
-  if (
-    name !== 'jest' &&
-    name !== 'expect' &&
-    !ValidJestFnCallChains.includes(links.join('.'))
-  ) {
+  if (name !== "jest" && name !== "expect" && !ValidJestFnCallChains.includes(links.join("."))) {
     return null;
   }
 
-  const parsedJestFnCall: Omit<ParsedJestFnCall, 'type'> = {
+  const parsedJestFnCall: Omit<ParsedJestFnCall, "type"> = {
     name,
     head: { ...resolved, node: first },
     // every member node must have a member expression as their parent
@@ -284,21 +271,18 @@ const parseJestFnCallWithReasonInner = (
 
   const type = determineJestFnType(name);
 
-  if (type === 'expect') {
+  if (type === "expect") {
     const result = parseJestExpectCall(parsedJestFnCall);
 
     // if the `expect` call chain is not valid, only report on the topmost node
     // since all members in the chain are likely to get flagged for some reason
-    if (
-      typeof result === 'string' &&
-      findTopMostCallExpression(node) !== node
-    ) {
+    if (typeof result === "string" && findTopMostCallExpression(node) !== node) {
       return null;
     }
 
-    if (result === 'matcher-not-found') {
-      if (node.parent?.type === 'MemberExpression') {
-        return 'matcher-not-called';
+    if (result === "matcher-not-found") {
+      if (node.parent?.type === "MemberExpression") {
+        return "matcher-not-called";
       }
     }
 
@@ -306,35 +290,29 @@ const parseJestFnCallWithReasonInner = (
   }
 
   // check that every link in the chain except the last is a member expression
-  if (
-    chain
-      .slice(0, chain.length - 1)
-      .some(nod => nod.parent?.type !== 'MemberExpression')
-  ) {
+  if (chain.slice(0, chain.length - 1).some((nod) => nod.parent?.type !== "MemberExpression")) {
     return null;
   }
 
   // ensure that we're at the "top" of the function call chain otherwise when
   // parsing e.g. x().y.z(), we'll incorrectly find & parse "x()" even though
   // the full chain is not a valid jest function call chain
-  if (
-    node.parent?.type === 'CallExpression' ||
-    node.parent?.type === 'MemberExpression'
-  ) {
+  if (node.parent?.type === "CallExpression" || node.parent?.type === "MemberExpression") {
     return null;
   }
 
   return { ...parsedJestFnCall, type };
 };
 
-type KnownMemberExpressionProperty<Specifics extends string = string> =
-  AccessorNode<Specifics> & { parent: KnownMemberExpression<Specifics> };
+type KnownMemberExpressionProperty<Specifics extends string = string> = AccessorNode<Specifics> & {
+  parent: KnownMemberExpression<Specifics>;
+};
 
 interface ModifiersAndMatcher {
   modifiers: KnownMemberExpressionProperty[];
   matcher: KnownMemberExpressionProperty;
   /** The arguments that are being passed to the `matcher` */
-  args: TSESTree.CallExpression['arguments'];
+  args: TSESTree.CallExpression["arguments"];
 }
 
 const findModifiersAndMatcher = (
@@ -346,8 +324,8 @@ const findModifiersAndMatcher = (
     // check if the member is being called, which means it is the matcher
     // (and also the end of the entire "expect" call chain)
     if (
-      member.parent?.type === 'MemberExpression' &&
-      member.parent.parent?.type === 'CallExpression'
+      member.parent?.type === "MemberExpression" &&
+      member.parent.parent?.type === "CallExpression"
     ) {
       return {
         matcher: member,
@@ -362,48 +340,43 @@ const findModifiersAndMatcher = (
     if (modifiers.length === 0) {
       // the first modifier can be any of the three modifiers
       if (!Object.prototype.hasOwnProperty.call(ModifierName, name)) {
-        return 'modifier-unknown';
+        return "modifier-unknown";
       }
     } else if (modifiers.length === 1) {
       // the second modifier can only be "not"
       if (name !== ModifierName.not) {
-        return 'modifier-unknown';
+        return "modifier-unknown";
       }
 
       const firstModifier = getAccessorValue(modifiers[0]);
 
       // and the first modifier has to be either "resolves" or "rejects"
-      if (
-        firstModifier !== ModifierName.resolves &&
-        firstModifier !== ModifierName.rejects
-      ) {
-        return 'modifier-unknown';
+      if (firstModifier !== ModifierName.resolves && firstModifier !== ModifierName.rejects) {
+        return "modifier-unknown";
       }
     } else {
-      return 'modifier-unknown';
+      return "modifier-unknown";
     }
 
     modifiers.push(member);
   }
 
   // this will only really happen if there are no members
-  return 'matcher-not-found';
+  return "matcher-not-found";
 };
 
 const parseJestExpectCall = (
-  typelessParsedJestFnCall: Omit<ParsedJestFnCall, 'type'>,
+  typelessParsedJestFnCall: Omit<ParsedJestFnCall, "type">,
 ): ParsedExpectFnCall | string => {
-  const modifiersAndMatcher = findModifiersAndMatcher(
-    typelessParsedJestFnCall.members,
-  );
+  const modifiersAndMatcher = findModifiersAndMatcher(typelessParsedJestFnCall.members);
 
-  if (typeof modifiersAndMatcher === 'string') {
+  if (typeof modifiersAndMatcher === "string") {
     return modifiersAndMatcher;
   }
 
   return {
     ...typelessParsedJestFnCall,
-    type: 'expect',
+    type: "expect",
     ...modifiersAndMatcher,
   };
 };
@@ -417,16 +390,16 @@ interface ImportDetails {
 const describeImportDefAsImport = (
   def: TSESLint.Scope.Definitions.ImportBindingDefinition,
 ): ImportDetails | null => {
-  if (def.parent.type === 'TSImportEqualsDeclaration') {
+  if (def.parent.type === "TSImportEqualsDeclaration") {
     return null;
   }
 
-  if (def.node.type !== 'ImportSpecifier') {
+  if (def.node.type !== "ImportSpecifier") {
     return null;
   }
 
   // we only care about value imports
-  if (def.parent.importKind === 'type') {
+  if (def.parent.importKind === "type") {
     return null;
   }
 
@@ -444,18 +417,16 @@ const describeImportDefAsImport = (
  * If no such node can be found (e.g. because the expression doesn't look
  * like an import), then `null` is returned instead.
  */
-const findImportSourceNode = (
-  node: TSESTree.Expression,
-): TSESTree.Node | null => {
-  if (node.type === 'AwaitExpression') {
-    if (node.argument.type === 'ImportExpression') {
+const findImportSourceNode = (node: TSESTree.Expression): TSESTree.Node | null => {
+  if (node.type === "AwaitExpression") {
+    if (node.argument.type === "ImportExpression") {
       return node.argument.source;
     }
 
     return null;
   }
 
-  if (node.type === 'CallExpression' && isIdentifier(node.callee, 'require')) {
+  if (node.type === "CallExpression" && isIdentifier(node.callee, "require")) {
     return node.arguments[0] ?? null;
   }
 
@@ -476,7 +447,7 @@ const describeVariableDefAsImport = (
     return null;
   }
 
-  if (def.name.parent?.type !== 'Property') {
+  if (def.name.parent?.type !== "Property") {
     return null;
   }
 
@@ -502,11 +473,11 @@ const describeVariableDefAsImport = (
  * is not describable as an import of any kind.
  */
 const describePossibleImportDef = (def: TSESLint.Scope.Definition) => {
-  if (def.type === 'Variable') {
+  if (def.type === "Variable") {
     return describeVariableDefAsImport(def);
   }
 
-  if (def.type === 'ImportBinding') {
+  if (def.type === "ImportBinding") {
     return describeImportDefAsImport(def);
   }
 
@@ -516,7 +487,7 @@ const describePossibleImportDef = (def: TSESLint.Scope.Definition) => {
 const resolveScope = (
   scope: TSESLint.Scope.Scope,
   identifier: string,
-): ImportDetails | 'local' | null => {
+): ImportDetails | "local" | null => {
   let currentScope: TSESLint.Scope.Scope | null = scope;
 
   while (currentScope !== null) {
@@ -531,7 +502,7 @@ const resolveScope = (
         return importDetails;
       }
 
-      return 'local';
+      return "local";
     }
 
     currentScope = currentScope.upper;
@@ -543,7 +514,7 @@ const resolveScope = (
 interface ResolvedJestFn {
   original: string | null;
   local: string;
-  type: 'import' | 'global';
+  type: "import" | "global";
 }
 
 const resolveToJestFn = (
@@ -555,21 +526,20 @@ const resolveToJestFn = (
 
   // the identifier was found as a local variable or function declaration
   // meaning it's not a function from jest
-  if (maybeImport === 'local') {
+  if (maybeImport === "local") {
     return null;
   }
 
   if (maybeImport) {
     const globalPackage =
-      (context.settings as SharedConfigurationSettings).jest?.globalPackage ??
-      '@jest/globals';
+      (context.settings as SharedConfigurationSettings).jest?.globalPackage ?? "@jest/globals";
 
     // the identifier is imported from our global package so return the original import name
     if (maybeImport.source === globalPackage) {
       return {
         original: maybeImport.imported,
         local: maybeImport.local,
-        type: 'import',
+        type: "import",
       };
     }
 
@@ -579,15 +549,12 @@ const resolveToJestFn = (
   return {
     original: resolvePossibleAliasedGlobal(identifier, context),
     local: identifier,
-    type: 'global',
+    type: "global",
   };
 };
 
 /* istanbul ignore next */
-const getScope = (
-  context: TSESLint.RuleContext<string, unknown[]>,
-  node: TSESTree.Node,
-) => {
+const getScope = (context: TSESLint.RuleContext<string, unknown[]>, node: TSESTree.Node) => {
   const sourceCode = context.sourceCode ?? context.getSourceCode();
 
   return sourceCode.getScope?.(node) ?? context.getScope();

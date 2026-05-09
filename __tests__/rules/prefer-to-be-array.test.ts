@@ -1,24 +1,24 @@
-import rule from '../../src/rules/prefer-to-be-array.js';
-import { RuleTester } from 'eslint';
+import rule from "../../src/rules/prefer-to-be-array.js";
+import { RuleTester } from "eslint";
 
 const ruleTester = new RuleTester({
   languageOptions: {
     ecmaVersion: 2024,
-    sourceType: 'module',
+    sourceType: "module",
   },
 });
 
 // makes ts happy about the dynamic test generation
-const messageId = 'preferToBeArray' as const;
+const messageId = "preferToBeArray" as const;
 
 const expectInAndOutValues = [
-  ['[] instanceof Array', '[]'],
-  ['Array.isArray([])', '([])'],
+  ["[] instanceof Array", "[]"],
+  ["Array.isArray([])", "([])"],
 ];
 
 const createTestsForEqualityMatchers = () =>
-  ['toBe', 'toEqual', 'toStrictEqual']
-    .map(matcher =>
+  ["toBe", "toEqual", "toStrictEqual"]
+    .map((matcher) =>
       expectInAndOutValues.map(([inValue, outValue]) => [
         {
           code: `expect(${inValue}).${matcher}(true);`,
@@ -45,19 +45,19 @@ const createTestsForEqualityMatchers = () =>
     .reduce((arr, cur) => arr.concat(cur), [])
     .reduce((arr, cur) => arr.concat(cur), []);
 
-ruleTester.run('prefer-to-be-array', rule, {
+ruleTester.run("prefer-to-be-array", rule, {
   valid: [
-    'expect.hasAssertions',
-    'expect.hasAssertions()',
-    'expect',
-    'expect()',
-    'expect().toBe(true)',
-    'expect([]).toBe(true)',
+    "expect.hasAssertions",
+    "expect.hasAssertions()",
+    "expect",
+    "expect()",
+    "expect().toBe(true)",
+    "expect([]).toBe(true)",
     'expect([])["toBe"](true)',
-    'expect([]).toBeArray()',
-    'expect([]).not.toBeArray()',
-    'expect([] instanceof Object).not.toBeArray()',
-    'expect([]).not.toBeInstanceOf(Object)',
+    "expect([]).toBeArray()",
+    "expect([]).not.toBeArray()",
+    "expect([] instanceof Object).not.toBeArray()",
+    "expect([]).not.toBeInstanceOf(Object)",
   ],
   invalid: [
     ...createTestsForEqualityMatchers(),
@@ -88,32 +88,32 @@ ruleTester.run('prefer-to-be-array', rule, {
 
     {
       code: 'expect(Array["isArray"]([])).toBe(true);',
-      output: 'expect(([])).toBeArray();',
+      output: "expect(([])).toBeArray();",
       errors: [{ messageId, column: 30, line: 1 }],
     },
     {
-      code: 'expect(Array[`isArray`]([])).toBe(true);',
-      output: 'expect(([])).toBeArray();',
+      code: "expect(Array[`isArray`]([])).toBe(true);",
+      output: "expect(([])).toBeArray();",
       errors: [{ messageId, column: 30, line: 1 }],
     },
     {
-      code: 'expect([]).toBeInstanceOf(Array);',
-      output: 'expect([]).toBeArray();',
+      code: "expect([]).toBeInstanceOf(Array);",
+      output: "expect([]).toBeArray();",
       errors: [{ messageId, column: 12, line: 1 }],
     },
     {
-      code: 'expect([]).not.toBeInstanceOf(Array);',
-      output: 'expect([]).not.toBeArray();',
+      code: "expect([]).not.toBeInstanceOf(Array);",
+      output: "expect([]).not.toBeArray();",
       errors: [{ messageId, column: 16, line: 1 }],
     },
     {
-      code: 'expect(requestValues()).resolves.toBeInstanceOf(Array);',
-      output: 'expect(requestValues()).resolves.toBeArray();',
+      code: "expect(requestValues()).resolves.toBeInstanceOf(Array);",
+      output: "expect(requestValues()).resolves.toBeArray();",
       errors: [{ messageId, column: 34, line: 1 }],
     },
     {
-      code: 'expect(queryApi()).rejects.not.toBeInstanceOf(Array);',
-      output: 'expect(queryApi()).rejects.not.toBeArray();',
+      code: "expect(queryApi()).rejects.not.toBeInstanceOf(Array);",
+      output: "expect(queryApi()).rejects.not.toBeArray();",
       errors: [{ messageId, column: 32, line: 1 }],
     },
   ],

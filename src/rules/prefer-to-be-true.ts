@@ -1,30 +1,30 @@
-import type { TSESTree } from '@typescript-eslint/utils';
+import type { TSESTree } from "@typescript-eslint/utils";
 import {
   EqualityMatcher,
   createRule,
   getAccessorValue,
   getFirstMatcherArg,
   parseJestFnCall,
-} from './utils/index.js';
+} from "./utils/index.js";
 
 interface TrueLiteral extends TSESTree.BooleanLiteral {
   value: true;
 }
 
 const isTrueLiteral = (node: TSESTree.Node): node is TrueLiteral =>
-  node.type === 'Literal' && node.value === true;
+  node.type === "Literal" && node.value === true;
 
 export default createRule({
-  name: 'prefer-to-be-true',
+  name: "prefer-to-be-true",
   meta: {
     docs: {
-      description: 'Suggest using `toBeTrue()`',
+      description: "Suggest using `toBeTrue()`",
     },
     messages: {
-      preferToBeTrue: 'Prefer using `toBeTrue()` to test value is `true`.',
+      preferToBeTrue: "Prefer using `toBeTrue()` to test value is `true`.",
     },
-    fixable: 'code',
-    type: 'suggestion',
+    fixable: "code",
+    type: "suggestion",
     schema: [],
   },
   defaultOptions: [],
@@ -33,7 +33,7 @@ export default createRule({
       CallExpression(node) {
         const jestFnCall = parseJestFnCall(node, context);
 
-        if (jestFnCall?.type !== 'expect') {
+        if (jestFnCall?.type !== "expect") {
           return;
         }
 
@@ -47,9 +47,9 @@ export default createRule({
         ) {
           context.report({
             node: jestFnCall.matcher,
-            messageId: 'preferToBeTrue',
-            fix: fixer => [
-              fixer.replaceText(jestFnCall.matcher, 'toBeTrue'),
+            messageId: "preferToBeTrue",
+            fix: (fixer) => [
+              fixer.replaceText(jestFnCall.matcher, "toBeTrue"),
               fixer.remove(jestFnCall.args[0]),
             ],
           });

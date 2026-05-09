@@ -1,4 +1,4 @@
-import type { TSESTree } from '@typescript-eslint/utils';
+import type { TSESTree } from "@typescript-eslint/utils";
 import {
   createRule,
   followTypeAssertionChain,
@@ -8,31 +8,28 @@ import {
   isParsedInstanceOfMatcherCall,
   isSupportedAccessor,
   parseJestFnCall,
-} from './utils/index.js';
+} from "./utils/index.js";
 
-const isArrayIsArrayCall = (
-  node: TSESTree.Node,
-): node is TSESTree.CallExpression =>
-  node.type === 'CallExpression' &&
-  node.callee.type === 'MemberExpression' &&
-  isSupportedAccessor(node.callee.object, 'Array') &&
-  isSupportedAccessor(node.callee.property, 'isArray');
+const isArrayIsArrayCall = (node: TSESTree.Node): node is TSESTree.CallExpression =>
+  node.type === "CallExpression" &&
+  node.callee.type === "MemberExpression" &&
+  isSupportedAccessor(node.callee.object, "Array") &&
+  isSupportedAccessor(node.callee.property, "isArray");
 
-export type MessageIds = 'preferToBeArray';
+export type MessageIds = "preferToBeArray";
 export type Options = [];
 
 export default createRule<Options, MessageIds>({
-  name: 'prefer-to-be-array',
+  name: "prefer-to-be-array",
   meta: {
     docs: {
-      description: 'Suggest using `toBeArray()`',
+      description: "Suggest using `toBeArray()`",
     },
     messages: {
-      preferToBeArray:
-        'Prefer using `toBeArray()` to test if a value is an array.',
+      preferToBeArray: "Prefer using `toBeArray()` to test if a value is an array.",
     },
-    fixable: 'code',
-    type: 'suggestion',
+    fixable: "code",
+    type: "suggestion",
     schema: [],
   },
   defaultOptions: [],
@@ -41,21 +38,18 @@ export default createRule<Options, MessageIds>({
       CallExpression(node) {
         const jestFnCall = parseJestFnCall(node, context);
 
-        if (jestFnCall?.type !== 'expect') {
+        if (jestFnCall?.type !== "expect") {
           return;
         }
 
-        if (isParsedInstanceOfMatcherCall(jestFnCall, 'Array')) {
+        if (isParsedInstanceOfMatcherCall(jestFnCall, "Array")) {
           context.report({
             node: jestFnCall.matcher,
-            messageId: 'preferToBeArray',
-            fix: fixer => [
+            messageId: "preferToBeArray",
+            fix: (fixer) => [
               fixer.replaceTextRange(
-                [
-                  jestFnCall.matcher.range[0],
-                  jestFnCall.matcher.range[1] + '(Array)'.length,
-                ],
-                'toBeArray()',
+                [jestFnCall.matcher.range[0], jestFnCall.matcher.range[1] + "(Array)".length],
+                "toBeArray()",
               ),
             ],
           });
@@ -65,7 +59,7 @@ export default createRule<Options, MessageIds>({
 
         const { parent: expect } = jestFnCall.head.node;
 
-        if (expect?.type !== 'CallExpression') {
+        if (expect?.type !== "CallExpression") {
           return;
         }
 
@@ -74,30 +68,23 @@ export default createRule<Options, MessageIds>({
         if (
           !expectArg ||
           !isBooleanEqualityMatcher(jestFnCall) ||
-          !(
-            isArrayIsArrayCall(expectArg) ||
-            isInstanceOfBinaryExpression(expectArg, 'Array')
-          )
+          !(isArrayIsArrayCall(expectArg) || isInstanceOfBinaryExpression(expectArg, "Array"))
         ) {
           return;
         }
 
         context.report({
           node: jestFnCall.matcher,
-          messageId: 'preferToBeArray',
+          messageId: "preferToBeArray",
           fix(fixer) {
             const fixes = [
-              fixer.replaceText(jestFnCall.matcher, 'toBeArray'),
-              expectArg.type === 'CallExpression'
+              fixer.replaceText(jestFnCall.matcher, "toBeArray"),
+              expectArg.type === "CallExpression"
                 ? fixer.remove(expectArg.callee)
-                : fixer.removeRange([
-                    expectArg.left.range[1],
-                    expectArg.range[1],
-                  ]),
+                : fixer.removeRange([expectArg.left.range[1], expectArg.range[1]]),
             ];
 
-            let invertCondition =
-              getAccessorValue(jestFnCall.matcher) === 'toBeFalse';
+            let invertCondition = getAccessorValue(jestFnCall.matcher) === "toBeFalse";
 
             if (jestFnCall.args.length) {
               const [matcherArg] = jestFnCall.args;
@@ -106,22 +93,19 @@ export default createRule<Options, MessageIds>({
 
               // toBeFalse can't have arguments, so this won't be true beforehand
               invertCondition =
-                matcherArg.type === 'Literal' &&
+                matcherArg.type === "Literal" &&
                 followTypeAssertionChain(matcherArg).value === false;
             }
 
             if (invertCondition) {
               const notModifier = jestFnCall.modifiers.find(
-                nod => getAccessorValue(nod) === 'not',
+                (nod) => getAccessorValue(nod) === "not",
               );
 
               fixes.push(
                 notModifier
-                  ? fixer.removeRange([
-                      notModifier.range[0] - 1,
-                      notModifier.range[1],
-                    ])
-                  : fixer.insertTextBefore(jestFnCall.matcher, 'not.'),
+                  ? fixer.removeRange([notModifier.range[0] - 1, notModifier.range[1]])
+                  : fixer.insertTextBefore(jestFnCall.matcher, "not."),
               );
             }
 

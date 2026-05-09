@@ -1,10 +1,9 @@
-import type { TSESTree } from '@typescript-eslint/utils';
+import type { TSESTree } from "@typescript-eslint/utils";
 
 /**
  * A `Literal` with a `value` of type `string`.
  */
-interface StringLiteral<Value extends string = string>
-  extends TSESTree.StringLiteral {
+interface StringLiteral<Value extends string = string> extends TSESTree.StringLiteral {
   value: Value;
 }
 
@@ -16,21 +15,18 @@ interface StringLiteral<Value extends string = string>
  *
  * @param {Node} node
  * @param {V} [value]
- *
- * @return {node is StringLiteral<V>}
- *
+ * @returns {node is StringLiteral<V>}
  * @template V
  */
 const isStringLiteral = <V extends string>(
   node: TSESTree.Node,
   value?: V,
 ): node is StringLiteral<V> =>
-  node.type === 'Literal' &&
-  typeof node.value === 'string' &&
+  node.type === "Literal" &&
+  typeof node.value === "string" &&
   (value === undefined || node.value === value);
 
-interface TemplateLiteral<Value extends string = string>
-  extends TSESTree.TemplateLiteral {
+interface TemplateLiteral<Value extends string = string> extends TSESTree.TemplateLiteral {
   quasis: [TSESTree.TemplateElement & { value: { raw: Value; cooked: Value } }];
 }
 
@@ -44,38 +40,31 @@ interface TemplateLiteral<Value extends string = string>
  *
  * @param {Node} node
  * @param {V} [value]
- *
- * @return {node is TemplateLiteral<V>}
- *
+ * @returns {node is TemplateLiteral<V>}
  * @template V
  */
 const isTemplateLiteral = <V extends string>(
   node: TSESTree.Node,
   value?: V,
 ): node is TemplateLiteral<V> =>
-  node.type === 'TemplateLiteral' &&
+  node.type === "TemplateLiteral" &&
   node.quasis.length === 1 && // bail out if not simple
   (value === undefined || node.quasis[0].value.raw === value);
 
-export type StringNode<S extends string = string> =
-  | StringLiteral<S>
-  | TemplateLiteral<S>;
+export type StringNode<S extends string = string> = StringLiteral<S> | TemplateLiteral<S>;
 
 /**
  * Checks if the given `node` is a {@link StringNode}.
  *
  * @param {Node} node
  * @param {V} [specifics]
- *
- * @return {node is StringNode}
- *
+ * @returns {node is StringNode}
  * @template V
  */
 export const isStringNode = <V extends string>(
   node: TSESTree.Node,
   specifics?: V,
-): node is StringNode<V> =>
-  isStringLiteral(node, specifics) || isTemplateLiteral(node, specifics);
+): node is StringNode<V> => isStringLiteral(node, specifics) || isTemplateLiteral(node, specifics);
 
 /**
  * Gets the value of the given `StringNode`.
@@ -84,9 +73,7 @@ export const isStringNode = <V extends string>(
  * otherwise, `value` is returned instead.
  *
  * @param {StringNode<S>} node
- *
- * @return {S}
- *
+ * @returns {S}
  * @template S
  */
 export const getStringValue = <S extends string>(node: StringNode<S>): S =>
@@ -107,16 +94,14 @@ interface KnownIdentifier<Name extends string> extends TSESTree.Identifier {
  *
  * @param {Node} node
  * @param {V} [name]
- *
- * @return {node is KnownIdentifier<Name>}
- *
+ * @returns {node is KnownIdentifier<Name>}
  * @template V
  */
 export const isIdentifier = <V extends string>(
   node: TSESTree.Node,
   name?: V,
 ): node is KnownIdentifier<V> =>
-  node.type === 'Identifier' && (name === undefined || node.name === name);
+  node.type === "Identifier" && (name === undefined || node.name === name);
 
 /**
  * Checks if the given `node` is a "supported accessor".
@@ -135,31 +120,24 @@ export const isIdentifier = <V extends string>(
  *
  * @param {Node} node
  * @param {V} [value]
- *
- * @return {node is AccessorNode<V>}
- *
+ * @returns {node is AccessorNode<V>}
  * @template V
  */
 export const isSupportedAccessor = <V extends string>(
   node: TSESTree.Node,
   value?: V,
-): node is AccessorNode<V> =>
-  isIdentifier(node, value) || isStringNode(node, value);
+): node is AccessorNode<V> => isIdentifier(node, value) || isStringNode(node, value);
 
 /**
  * Gets the value of the given `AccessorNode`,
  * account for the different node types.
  *
  * @param {AccessorNode<S>} accessor
- *
- * @return {S}
- *
+ * @returns {S}
  * @template S
  */
-export const getAccessorValue = <S extends string = string>(
-  accessor: AccessorNode<S>,
-): S =>
-  accessor.type === 'Identifier' ? accessor.name : getStringValue(accessor);
+export const getAccessorValue = <S extends string = string>(accessor: AccessorNode<S>): S =>
+  accessor.type === "Identifier" ? accessor.name : getStringValue(accessor);
 
 export type AccessorNode<Specifics extends string = string> =
   | StringNode<Specifics>

@@ -3,19 +3,19 @@ import {
   getAccessorValue,
   getFirstMatcherArg,
   parseJestFnCall,
-} from './utils/index.js';
+} from "./utils/index.js";
 
 export default createRule({
-  name: 'prefer-to-have-been-called-once',
+  name: "prefer-to-have-been-called-once",
   meta: {
     docs: {
-      description: 'Suggest using `toHaveBeenCalledOnce()`',
+      description: "Suggest using `toHaveBeenCalledOnce()`",
     },
     messages: {
-      preferCalledOnce: 'Prefer `toHaveBeenCalledOnce()`',
+      preferCalledOnce: "Prefer `toHaveBeenCalledOnce()`",
     },
-    fixable: 'code',
-    type: 'suggestion',
+    fixable: "code",
+    type: "suggestion",
     schema: [],
   },
   defaultOptions: [],
@@ -24,25 +24,25 @@ export default createRule({
       CallExpression(node) {
         const jestFnCall = parseJestFnCall(node, context);
 
-        if (jestFnCall?.type !== 'expect') {
+        if (jestFnCall?.type !== "expect") {
           return;
         }
 
         if (
-          getAccessorValue(jestFnCall.matcher) === 'toHaveBeenCalledTimes' &&
+          getAccessorValue(jestFnCall.matcher) === "toHaveBeenCalledTimes" &&
           jestFnCall.args.length === 1
         ) {
           const arg = getFirstMatcherArg(jestFnCall);
 
-          if (arg.type !== 'Literal' || arg.value !== 1) {
+          if (arg.type !== "Literal" || arg.value !== 1) {
             return;
           }
 
           context.report({
             node: jestFnCall.matcher,
-            messageId: 'preferCalledOnce',
-            fix: fixer => [
-              fixer.replaceText(jestFnCall.matcher, 'toHaveBeenCalledOnce'),
+            messageId: "preferCalledOnce",
+            fix: (fixer) => [
+              fixer.replaceText(jestFnCall.matcher, "toHaveBeenCalledOnce"),
               fixer.remove(jestFnCall.args[0]),
             ],
           });

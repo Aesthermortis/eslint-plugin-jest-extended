@@ -1,14 +1,10 @@
-import { parse as parsePath } from 'node:path';
-import type { TSESLint, TSESTree } from '@typescript-eslint/utils';
-import type { Rule } from 'eslint';
-import packageJson from '../../../package.json' with { type: 'json' };
-import {
-  type AccessorNode,
-  getAccessorValue,
-  isSupportedAccessor,
-} from './accessors.js';
-import { followTypeAssertionChain } from './followTypeAssertionChain.js';
-import type { ParsedExpectFnCall } from './parseJestFnCall.js';
+import { parse as parsePath } from "node:path";
+import type { TSESLint, TSESTree } from "@typescript-eslint/utils";
+import type { Rule } from "eslint";
+import packageJson from "../../../package.json" with { type: "json" };
+import { type AccessorNode, getAccessorValue, isSupportedAccessor } from "./accessors.js";
+import { followTypeAssertionChain } from "./followTypeAssertionChain.js";
+import type { ParsedExpectFnCall } from "./parseJestFnCall.js";
 
 interface RuleModuleWithName extends Rule.RuleModule {
   defaultOptions: unknown[];
@@ -16,32 +12,27 @@ interface RuleModuleWithName extends Rule.RuleModule {
 }
 
 interface RuleDefinition<Options extends unknown[], MessageIds extends string> {
-  create(
-    context: Readonly<TSESLint.RuleContext<MessageIds, Options>>,
-  ): TSESLint.RuleListener;
+  create(context: Readonly<TSESLint.RuleContext<MessageIds, Options>>): TSESLint.RuleListener;
   defaultOptions: Options;
-  meta: Omit<Rule.RuleMetaData, 'messages'> & {
+  meta: Omit<Rule.RuleMetaData, "messages"> & {
     messages: Record<MessageIds, string>;
   };
   name: string;
 }
 
-export const createRule = <
-  Options extends unknown[],
-  MessageIds extends string,
->(
+export const createRule = <Options extends unknown[], MessageIds extends string>(
   rule: RuleDefinition<Options, MessageIds>,
 ): RuleModuleWithName => {
   const ruleName = parsePath(rule.name).name;
   const repositorySource = packageJson.repository as unknown;
   const repository =
-    typeof repositorySource === 'string'
+    typeof repositorySource === "string"
       ? repositorySource
       : (repositorySource as { url: string }).url;
 
   return {
     ...rule,
-    create: rule.create as unknown as Rule.RuleModule['create'],
+    create: rule.create as unknown as Rule.RuleModule["create"],
     meta: {
       ...rule.meta,
       docs: {
@@ -65,8 +56,7 @@ export interface KnownMemberExpression<Name extends string = string>
  *
  * i.e `KnownCallExpression<'includes'>` represents `.includes()`.
  */
-export interface KnownCallExpression<Name extends string = string>
-  extends TSESTree.CallExpression {
+export interface KnownCallExpression<Name extends string = string> extends TSESTree.CallExpression {
   callee: CalledKnownMemberExpression<Name>;
 }
 
@@ -82,36 +72,36 @@ interface CalledKnownMemberExpression<
 }
 
 export enum DescribeAlias {
-  'describe' = 'describe',
-  'fdescribe' = 'fdescribe',
-  'xdescribe' = 'xdescribe',
+  "describe" = "describe",
+  "fdescribe" = "fdescribe",
+  "xdescribe" = "xdescribe",
 }
 
 export enum TestCaseName {
-  'fit' = 'fit',
-  'it' = 'it',
-  'test' = 'test',
-  'xit' = 'xit',
-  'xtest' = 'xtest',
+  "fit" = "fit",
+  "it" = "it",
+  "test" = "test",
+  "xit" = "xit",
+  "xtest" = "xtest",
 }
 
 export enum HookName {
-  'beforeAll' = 'beforeAll',
-  'beforeEach' = 'beforeEach',
-  'afterAll' = 'afterAll',
-  'afterEach' = 'afterEach',
+  "beforeAll" = "beforeAll",
+  "beforeEach" = "beforeEach",
+  "afterAll" = "afterAll",
+  "afterEach" = "afterEach",
 }
 
 export enum ModifierName {
-  not = 'not',
-  rejects = 'rejects',
-  resolves = 'resolves',
+  not = "not",
+  rejects = "rejects",
+  resolves = "resolves",
 }
 
 export enum EqualityMatcher {
-  toBe = 'toBe',
-  toEqual = 'toEqual',
-  toStrictEqual = 'toStrictEqual',
+  toBe = "toBe",
+  toEqual = "toEqual",
+  toStrictEqual = "toStrictEqual",
 }
 
 export const findTopMostCallExpression = (
@@ -121,7 +111,7 @@ export const findTopMostCallExpression = (
   let { parent } = node;
 
   while (parent) {
-    if (parent.type === 'CallExpression') {
+    if (parent.type === "CallExpression") {
       topMostCallExpression = parent;
 
       parent = parent.parent;
@@ -129,7 +119,7 @@ export const findTopMostCallExpression = (
       continue;
     }
 
-    if (parent.type !== 'MemberExpression') {
+    if (parent.type !== "MemberExpression") {
       break;
     }
 
@@ -139,17 +129,15 @@ export const findTopMostCallExpression = (
   return topMostCallExpression;
 };
 
-export const isBooleanLiteral = (
-  node: TSESTree.Node,
-): node is TSESTree.BooleanLiteral =>
-  node.type === 'Literal' && typeof node.value === 'boolean';
+export const isBooleanLiteral = (node: TSESTree.Node): node is TSESTree.BooleanLiteral =>
+  node.type === "Literal" && typeof node.value === "boolean";
 
 export const getFirstMatcherArg = (
   expectFnCall: ParsedExpectFnCall,
 ): TSESTree.SpreadElement | TSESTree.Expression => {
   const [firstArg] = expectFnCall.args;
 
-  if (firstArg.type === 'SpreadElement') {
+  if (firstArg.type === "SpreadElement") {
     return firstArg;
   }
 
@@ -160,8 +148,8 @@ export const isInstanceOfBinaryExpression = (
   node: TSESTree.Node,
   className: string,
 ): node is TSESTree.BinaryExpression =>
-  node.type === 'BinaryExpression' &&
-  node.operator === 'instanceof' &&
+  node.type === "BinaryExpression" &&
+  node.operator === "instanceof" &&
   isSupportedAccessor(node.right, className);
 
 export const isParsedInstanceOfMatcherCall = (
@@ -169,7 +157,7 @@ export const isParsedInstanceOfMatcherCall = (
   classArg?: string,
 ): boolean => {
   return (
-    getAccessorValue(expectFnCall.matcher) === 'toBeInstanceOf' &&
+    getAccessorValue(expectFnCall.matcher) === "toBeInstanceOf" &&
     expectFnCall.args.length === 1 &&
     isSupportedAccessor(expectFnCall.args[0], classArg)
   );
@@ -179,12 +167,10 @@ export const isParsedInstanceOfMatcherCall = (
  * Checks if the given `ParsedExpectMatcher` is either a call to one of the equality matchers,
  * with a boolean` literal as the sole argument, *or* is a call to `toBeTrue` or `toBeFalse`.
  */
-export const isBooleanEqualityMatcher = (
-  expectFnCall: ParsedExpectFnCall,
-): boolean => {
+export const isBooleanEqualityMatcher = (expectFnCall: ParsedExpectFnCall): boolean => {
   const matcherName = getAccessorValue(expectFnCall.matcher);
 
-  if (['toBeTrue', 'toBeFalse'].includes(matcherName)) {
+  if (["toBeTrue", "toBeFalse"].includes(matcherName)) {
     return true;
   }
 
@@ -195,7 +181,6 @@ export const isBooleanEqualityMatcher = (
   const arg = getFirstMatcherArg(expectFnCall);
 
   return (
-    Object.prototype.hasOwnProperty.call(EqualityMatcher, matcherName) &&
-    isBooleanLiteral(arg)
+    Object.prototype.hasOwnProperty.call(EqualityMatcher, matcherName) && isBooleanLiteral(arg)
   );
 };

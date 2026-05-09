@@ -6,23 +6,22 @@ import {
   isInstanceOfBinaryExpression,
   isParsedInstanceOfMatcherCall,
   parseJestFnCall,
-} from './utils/index.js';
+} from "./utils/index.js";
 
-export type MessageIds = 'preferToBeObject';
+export type MessageIds = "preferToBeObject";
 export type Options = [];
 
 export default createRule<Options, MessageIds>({
-  name: 'prefer-to-be-object',
+  name: "prefer-to-be-object",
   meta: {
     docs: {
-      description: 'Suggest using `toBeObject()`',
+      description: "Suggest using `toBeObject()`",
     },
     messages: {
-      preferToBeObject:
-        'Prefer using `toBeObject()` to test if a value is an Object.',
+      preferToBeObject: "Prefer using `toBeObject()` to test if a value is an Object.",
     },
-    fixable: 'code',
-    type: 'suggestion',
+    fixable: "code",
+    type: "suggestion",
     schema: [],
   },
   defaultOptions: [],
@@ -31,21 +30,18 @@ export default createRule<Options, MessageIds>({
       CallExpression(node) {
         const jestFnCall = parseJestFnCall(node, context);
 
-        if (jestFnCall?.type !== 'expect') {
+        if (jestFnCall?.type !== "expect") {
           return;
         }
 
-        if (isParsedInstanceOfMatcherCall(jestFnCall, 'Object')) {
+        if (isParsedInstanceOfMatcherCall(jestFnCall, "Object")) {
           context.report({
             node: jestFnCall.matcher,
-            messageId: 'preferToBeObject',
-            fix: fixer => [
+            messageId: "preferToBeObject",
+            fix: (fixer) => [
               fixer.replaceTextRange(
-                [
-                  jestFnCall.matcher.range[0],
-                  jestFnCall.matcher.range[1] + '(Object)'.length,
-                ],
-                'toBeObject()',
+                [jestFnCall.matcher.range[0], jestFnCall.matcher.range[1] + "(Object)".length],
+                "toBeObject()",
               ),
             ],
           });
@@ -55,7 +51,7 @@ export default createRule<Options, MessageIds>({
 
         const { parent: expect } = jestFnCall.head.node;
 
-        if (expect?.type !== 'CallExpression') {
+        if (expect?.type !== "CallExpression") {
           return;
         }
 
@@ -64,22 +60,21 @@ export default createRule<Options, MessageIds>({
         if (
           !expectArg ||
           !isBooleanEqualityMatcher(jestFnCall) ||
-          !isInstanceOfBinaryExpression(expectArg, 'Object')
+          !isInstanceOfBinaryExpression(expectArg, "Object")
         ) {
           return;
         }
 
         context.report({
           node: jestFnCall.matcher,
-          messageId: 'preferToBeObject',
+          messageId: "preferToBeObject",
           fix(fixer) {
             const fixes = [
-              fixer.replaceText(jestFnCall.matcher, 'toBeObject'),
+              fixer.replaceText(jestFnCall.matcher, "toBeObject"),
               fixer.removeRange([expectArg.left.range[1], expectArg.range[1]]),
             ];
 
-            let invertCondition =
-              getAccessorValue(jestFnCall.matcher) === 'toBeFalse';
+            let invertCondition = getAccessorValue(jestFnCall.matcher) === "toBeFalse";
 
             if (jestFnCall.args?.length) {
               const [matcherArg] = jestFnCall.args;
@@ -88,22 +83,19 @@ export default createRule<Options, MessageIds>({
 
               // toBeFalse can't have arguments, so this won't be true beforehand
               invertCondition =
-                matcherArg.type === 'Literal' &&
+                matcherArg.type === "Literal" &&
                 followTypeAssertionChain(matcherArg).value === false;
             }
 
             if (invertCondition) {
               const notModifier = jestFnCall.modifiers.find(
-                nod => getAccessorValue(nod) === 'not',
+                (nod) => getAccessorValue(nod) === "not",
               );
 
               fixes.push(
                 notModifier
-                  ? fixer.removeRange([
-                      notModifier.range[0] - 1,
-                      notModifier.range[1],
-                    ])
-                  : fixer.insertTextBefore(jestFnCall.matcher, 'not.'),
+                  ? fixer.removeRange([notModifier.range[0] - 1, notModifier.range[1]])
+                  : fixer.insertTextBefore(jestFnCall.matcher, "not."),
               );
             }
 
