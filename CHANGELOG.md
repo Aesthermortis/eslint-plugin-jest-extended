@@ -87,6 +87,49 @@
 
 * support `failing.each` ([#179](https://github.com/jest-community/eslint-plugin-jest-extended/issues/179)) ([b2adda4](https://github.com/jest-community/eslint-plugin-jest-extended/commit/b2adda4cacf1616ce18bed4d655a8a5b533c6664))
 
+## [4.0.0](https://github.com/Aesthermortis/eslint-plugin-jest-extended/compare/v3.0.1...v4.0.0) (2026-05-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* **tooling:** the package now targets Node 24+, npm 11+, ESLint 10, and ESM-only consumption.
+
+### 🩹 Fixes
+
+* **plugin:** align meta and config typings ([8a0f52b](https://github.com/Aesthermortis/eslint-plugin-jest-extended/commit/8a0f52b0a204f1da6dc808b057be6b8aba7e1acc))
+
+
+### 📚 Documentation
+
+* **code-of-conduct:** add Contributor Covenant Code of Conduct ([c7a2cb3](https://github.com/Aesthermortis/eslint-plugin-jest-extended/commit/c7a2cb36eadbe2ac06c60091e471274eecb36125))
+
+
+### 🧹 Chores
+
+* **config:** enforce top-level __tests__ layout ([1920d48](https://github.com/Aesthermortis/eslint-plugin-jest-extended/commit/1920d48f4f50f71bfb541e1e17664c32b6c75bcc))
+* **index:** refactor plugin export assertions ([56db742](https://github.com/Aesthermortis/eslint-plugin-jest-extended/commit/56db74267bfbd934d8ee11695c16f45befc13446))
+* **lint:** add stricter flat config presets ([7018abc](https://github.com/Aesthermortis/eslint-plugin-jest-extended/commit/7018abcbfbe3c918f50440bc76e28017b80e2be1))
+* **rules:** centralize AST node type constants ([deab28c](https://github.com/Aesthermortis/eslint-plugin-jest-extended/commit/deab28c1a1a1a2e8abe3170cc574c90c90e8964d))
+* **rules:** flatten matcher test case generation ([6693f2c](https://github.com/Aesthermortis/eslint-plugin-jest-extended/commit/6693f2c3c51146bd89fb3419ae07a55f28c87ab3))
+* **rules:** import TypeScript parser directly ([df9dea1](https://github.com/Aesthermortis/eslint-plugin-jest-extended/commit/df9dea1a72ec331680e953a09f5967316fed8a4b))
+* **tsconfig:** update build configuration for TypeScript ([cc2c1df](https://github.com/Aesthermortis/eslint-plugin-jest-extended/commit/cc2c1df77c993c38ec9f392fac771bb154527b21))
+* **utils:** add utility edge case coverage ([5a4961e](https://github.com/Aesthermortis/eslint-plugin-jest-extended/commit/5a4961e20676034ae79ee9aa468abe1528cd937e))
+
+
+### 🤖 Automation
+
+* **config:** configure prettier plugins and LF endings ([8a9d1cd](https://github.com/Aesthermortis/eslint-plugin-jest-extended/commit/8a9d1cd83bdce510da500ffc483f9dfb54d1ac85))
+* **deps:** bump @commitlint/cli to version 21.0.0 ([5d28b3d](https://github.com/Aesthermortis/eslint-plugin-jest-extended/commit/5d28b3de1b3b958a16dfbbab12b27dcd98c9e2ca))
+* **deps:** bump @commitlint/config-conventional to version 21.0.0 ([4d13731](https://github.com/Aesthermortis/eslint-plugin-jest-extended/commit/4d137311c894518437c871165f4e47e6cbdf588d))
+* **deps:** bump dedent to version 1.7.2 ([ac133e9](https://github.com/Aesthermortis/eslint-plugin-jest-extended/commit/ac133e9ae2702f925c282093ccdf34a269f2cd09))
+* **deps:** bump jest to version 30.4.2 ([25ed172](https://github.com/Aesthermortis/eslint-plugin-jest-extended/commit/25ed1729a1566e10e9d29da7233e37b51afe5fd1))
+* **deps:** bump lint-staged to 17.0.4 ([05198d1](https://github.com/Aesthermortis/eslint-plugin-jest-extended/commit/05198d110c10bd1ca2e3ac0d17c545a817971864))
+* **deps:** bump lint-staged to version 17.0.3 ([31fd3c0](https://github.com/Aesthermortis/eslint-plugin-jest-extended/commit/31fd3c000f3a29b7e68293ce4ecda48952af7fe1))
+* **deps:** bump locked dependencies ([6aadbac](https://github.com/Aesthermortis/eslint-plugin-jest-extended/commit/6aadbac267d24e5dbc053e6815ecda7aefbdf004))
+* **deps:** bump typescript to version 6.0.3 ([139c593](https://github.com/Aesthermortis/eslint-plugin-jest-extended/commit/139c593e686f7899e9349cd1a6797e1bfcf22320))
+* **docs:** simplify generated rule docs format ([da0112c](https://github.com/Aesthermortis/eslint-plugin-jest-extended/commit/da0112c79bfeec15ff841e0de5a6bb0cb418907d))
+* **tooling:** migrate repo to npm and ESM ([f5471f7](https://github.com/Aesthermortis/eslint-plugin-jest-extended/commit/f5471f7d9e52f190f29acb3effc598e57b7c0513))
+
 ## [2.0.3](https://github.com/jest-community/eslint-plugin-jest-extended/compare/v2.0.2...v2.0.3) (2024-04-19)
 
 
