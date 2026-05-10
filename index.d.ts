@@ -1,4 +1,4 @@
-import type { ESLint, Rule } from "eslint";
+import type { ESLint, Linter, Rule } from "eslint";
 
 declare const jestExtended: {
   meta: {
@@ -17,7 +17,7 @@ declare const jestExtended: {
         "jest-extended/prefer-to-be-true": "error";
         "jest-extended/prefer-to-have-been-called-once": "error";
       };
-    };
+    } & Linter.Config;
   };
   rules: {
     "prefer-to-be-array": Rule.RuleModule;

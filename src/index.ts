@@ -6,8 +6,8 @@ const namespace = "jest-extended";
 
 const plugin = {
   meta: {
-    name: packageJson.name,
-    namespace: "jest-extended",
+    name: "eslint-plugin-jest-extended",
+    namespace,
     version: packageJson.version,
   },
   configs: {},
