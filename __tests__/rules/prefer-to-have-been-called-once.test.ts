@@ -1,5 +1,5 @@
 import rule from "../../src/rules/prefer-to-have-been-called-once.js";
-import tseslint from "typescript-eslint";
+import { parser } from "typescript-eslint";
 import { RuleTester } from "eslint";
 
 const ruleTester = new RuleTester({
@@ -11,7 +11,7 @@ const ruleTester = new RuleTester({
 
 const typescriptRuleTester = new RuleTester({
   languageOptions: {
-    parser: tseslint.parser,
+    parser: parser,
     ecmaVersion: 2024,
     sourceType: "module",
   },

@@ -1,6 +1,6 @@
 import type { TSESTree } from "@typescript-eslint/utils";
 import dedent from "dedent";
-import tseslint from "typescript-eslint";
+import { parser } from "typescript-eslint";
 import { RuleTester } from "eslint";
 import {
   type ParsedJestFnCall,
@@ -20,7 +20,7 @@ const ruleTester = new RuleTester({
 
 const typescriptRuleTester = new RuleTester({
   languageOptions: {
-    parser: tseslint.parser,
+    parser: parser,
     ecmaVersion: 2024,
     sourceType: "module",
   },
@@ -64,13 +64,13 @@ const rule = createRule({
           messageId: "details",
           node,
           data: {
-            data: JSON.stringify(sorted, (_key, value) => {
+            data: JSON.stringify(sorted, (_key: string, value: unknown): unknown => {
               if (isNode(value)) {
                 if (isSupportedAccessor(value)) {
                   return getAccessorValue(value);
                 }
 
-                return undefined;
+                return;
               }
 
               return value;
