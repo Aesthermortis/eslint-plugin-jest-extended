@@ -26,15 +26,15 @@ Import `eslint-plugin-jest-extended` in your `eslint.config.js` file, then
 configure the rules you want to use.
 
 ```js
-import jestExtended from 'eslint-plugin-jest-extended';
+import jestExtended from "eslint-plugin-jest-extended";
 
 export default [
   {
-    files: ['**/*.test.js'],
-    plugins: { 'jest-extended': jestExtended },
+    files: ["**/*.test.js"],
+    plugins: { "jest-extended": jestExtended },
     rules: {
-      'jest-extended/prefer-to-be-true': 'warn',
-      'jest-extended/prefer-to-be-false': 'error',
+      "jest-extended/prefer-to-be-true": "warn",
+      "jest-extended/prefer-to-be-false": "error",
     },
   },
 ];
@@ -54,7 +54,7 @@ If you want to enable all rules instead of only some, use
 `jestExtended.configs.all`:
 
 ```js
-import jestExtended from 'eslint-plugin-jest-extended';
+import jestExtended from "eslint-plugin-jest-extended";
 
 export default [
   {
@@ -73,14 +73,9 @@ for installations requiring long-term consistency.
 
 <!-- begin auto-generated rules list -->
 
-💼
-[Configurations](https://github.com/jest-community/eslint-plugin-jest-extended/blob/main/README.md#shareable-configurations)
-enabled in.\
-🌐 Set in the `all`
-[configuration](https://github.com/jest-community/eslint-plugin-jest-extended/blob/main/README.md#shareable-configurations).\
-🔧
-Automatically fixable by the
-[`--fix` CLI option](https://eslint.org/docs/user-guide/command-line-interface#--fix).
+💼 Configurations enabled in.\
+🌐 Set in the `all` configuration.\
+🔧 Automatically fixable by the [`--fix` CLI option](https://eslint.org/docs/user-guide/command-line-interface#--fix).
 
 | Name                                                                             | Description                            | 💼  | 🔧  |
 | :------------------------------------------------------------------------------- | :------------------------------------- | :-- | :-- |
@@ -110,5 +105,3 @@ This project aims to provide formatting rules (auto-fixable where possible) to
 ensure consistency and readability in jest test suites.
 
 https://github.com/dangreenisrael/eslint-plugin-jest-formatting
-
-[fixable]: https://img.shields.io/badge/-fixable-green.svg

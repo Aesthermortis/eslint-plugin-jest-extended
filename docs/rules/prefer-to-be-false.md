@@ -1,12 +1,10 @@
-# Suggest using `toBeFalse()` (`prefer-to-be-false`)
+# jest-extended/prefer-to-be-false
 
 📝 Suggest using `toBeFalse()`.
 
-💼 This rule is enabled in the 🌐 `all`
-[config](https://github.com/jest-community/eslint-plugin-jest-extended/blob/main/README.md#shareable-configurations).
+💼 This rule is enabled in the 🌐 `all` config.
 
-🔧 This rule is automatically fixable by the
-[`--fix` CLI option](https://eslint.org/docs/latest/user-guide/command-line-interface#--fix).
+🔧 This rule is automatically fixable by the [`--fix` CLI option](https://eslint.org/docs/latest/user-guide/command-line-interface#--fix).
 
 <!-- end auto-generated rule header -->
 
@@ -25,7 +23,7 @@ expect(true).toBe(false);
 
 expect(wasSuccessful).toEqual(false);
 
-expect(fs.existsSync('/path/to/file')).toStrictEqual(false);
+expect(fs.existsSync("/path/to/file")).toStrictEqual(false);
 ```
 
 The following patterns are _not_ considered warnings:
@@ -35,9 +33,9 @@ expect(true).toBeFalse();
 
 expect(wasSuccessful).toBeFalse();
 
-expect(fs.existsSync('/path/to/file')).toBeFalse();
+expect(fs.existsSync("/path/to/file")).toBeFalse();
 
-test('returns false', () => {
+test("returns false", () => {
   expect(areWeThereYet()).toBeFalse();
   expect(true).not.toBeFalse();
 });
