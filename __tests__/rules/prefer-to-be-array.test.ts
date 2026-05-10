@@ -18,7 +18,7 @@ const expectInAndOutValues = [
 
 const createTestsForEqualityMatchers = () =>
   ["toBe", "toEqual", "toStrictEqual"]
-    .map((matcher) =>
+    .flatMap((matcher) =>
       expectInAndOutValues.map(([inValue, outValue]) => [
         {
           code: `expect(${inValue}).${matcher}(true);`,
@@ -42,8 +42,7 @@ const createTestsForEqualityMatchers = () =>
         },
       ]),
     )
-    .reduce((arr, cur) => arr.concat(cur), [])
-    .reduce((arr, cur) => arr.concat(cur), []);
+    .flat();
 
 ruleTester.run("prefer-to-be-array", rule, {
   valid: [
@@ -61,30 +60,28 @@ ruleTester.run("prefer-to-be-array", rule, {
   ],
   invalid: [
     ...createTestsForEqualityMatchers(),
-    ...expectInAndOutValues
-      .map(([inValue, outValue]) => [
-        {
-          code: `expect(${inValue}).toBeTrue();`,
-          errors: [{ messageId, column: 10 + inValue.length, line: 1 }],
-          output: `expect(${outValue}).toBeArray();`,
-        },
-        {
-          code: `expect(${inValue}).not.toBeTrue();`,
-          errors: [{ messageId, column: 14 + inValue.length, line: 1 }],
-          output: `expect(${outValue}).not.toBeArray();`,
-        },
-        {
-          code: `expect(${inValue}).toBeFalse();`,
-          errors: [{ messageId, column: 10 + inValue.length, line: 1 }],
-          output: `expect(${outValue}).not.toBeArray();`,
-        },
-        {
-          code: `expect(${inValue}).not.toBeFalse();`,
-          errors: [{ messageId, column: 14 + inValue.length, line: 1 }],
-          output: `expect(${outValue}).toBeArray();`,
-        },
-      ])
-      .reduce((arr, cur) => arr.concat(cur), []),
+    ...expectInAndOutValues.flatMap(([inValue, outValue]) => [
+      {
+        code: `expect(${inValue}).toBeTrue();`,
+        errors: [{ messageId, column: 10 + inValue.length, line: 1 }],
+        output: `expect(${outValue}).toBeArray();`,
+      },
+      {
+        code: `expect(${inValue}).not.toBeTrue();`,
+        errors: [{ messageId, column: 14 + inValue.length, line: 1 }],
+        output: `expect(${outValue}).not.toBeArray();`,
+      },
+      {
+        code: `expect(${inValue}).toBeFalse();`,
+        errors: [{ messageId, column: 10 + inValue.length, line: 1 }],
+        output: `expect(${outValue}).not.toBeArray();`,
+      },
+      {
+        code: `expect(${inValue}).not.toBeFalse();`,
+        errors: [{ messageId, column: 14 + inValue.length, line: 1 }],
+        output: `expect(${outValue}).toBeArray();`,
+      },
+    ]),
 
     {
       code: 'expect(Array["isArray"]([])).toBe(true);',

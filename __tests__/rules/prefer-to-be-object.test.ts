@@ -12,30 +12,28 @@ const ruleTester = new RuleTester({
 const messageId = "preferToBeObject" as const;
 
 const createTestsForEqualityMatchers = () =>
-  ["toBe", "toEqual", "toStrictEqual"]
-    .map((matcher) => [
-      {
-        code: `expect({} instanceof Object).${matcher}(true);`,
-        errors: [{ messageId, column: 30, line: 1 }],
-        output: `expect({}).toBeObject();`,
-      },
-      {
-        code: `expect({} instanceof Object).not.${matcher}(true);`,
-        errors: [{ messageId, column: 34, line: 1 }],
-        output: `expect({}).not.toBeObject();`,
-      },
-      {
-        code: `expect({} instanceof Object).${matcher}(false);`,
-        errors: [{ messageId, column: 30, line: 1 }],
-        output: `expect({}).not.toBeObject();`,
-      },
-      {
-        code: `expect({} instanceof Object).not.${matcher}(false);`,
-        errors: [{ messageId, column: 34, line: 1 }],
-        output: `expect({}).toBeObject();`,
-      },
-    ])
-    .reduce((arr, cur) => arr.concat(cur), []);
+  ["toBe", "toEqual", "toStrictEqual"].flatMap((matcher) => [
+    {
+      code: `expect({} instanceof Object).${matcher}(true);`,
+      errors: [{ messageId, column: 30, line: 1 }],
+      output: `expect({}).toBeObject();`,
+    },
+    {
+      code: `expect({} instanceof Object).not.${matcher}(true);`,
+      errors: [{ messageId, column: 34, line: 1 }],
+      output: `expect({}).not.toBeObject();`,
+    },
+    {
+      code: `expect({} instanceof Object).${matcher}(false);`,
+      errors: [{ messageId, column: 30, line: 1 }],
+      output: `expect({}).not.toBeObject();`,
+    },
+    {
+      code: `expect({} instanceof Object).not.${matcher}(false);`,
+      errors: [{ messageId, column: 34, line: 1 }],
+      output: `expect({}).toBeObject();`,
+    },
+  ]);
 
 ruleTester.run("prefer-to-be-object", rule, {
   valid: [
