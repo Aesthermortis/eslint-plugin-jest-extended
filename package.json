@@ -62,7 +62,7 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^24.0.0",
     "@typescript-eslint/utils": "^8.59.2",
-    "dedent": "^1.0.0",
+    "dedent": "^1.7.2",
     "eslint": "^10.3.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-doc-generator": "^3.3.2",
