@@ -1,6 +1,5 @@
 // @ts-check
 
-/** @type {import("lint-staged").Configuration} */
 const config = {
   "**/*": ["prettier --write --ignore-unknown"],
   "**/*.{js,jsx,cjs,mjs,ts,tsx,cts,mts}": [

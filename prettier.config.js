@@ -1,6 +1,5 @@
 // @ts-check
 
-/** @type {import("prettier").Config} */
 const config = {
   arrowParens: "always",
   endOfLine: "lf",

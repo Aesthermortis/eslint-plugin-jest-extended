@@ -1,32 +1,54 @@
-import eslintComments from "@eslint-community/eslint-plugin-eslint-comments";
+import { recommended as eslintComments } from "@eslint-community/eslint-plugin-eslint-comments/configs";
 import eslint from "@eslint/js";
-import eslintPlugin from "eslint-plugin-eslint-plugin";
-import n from "eslint-plugin-n";
 import eslintConfigPrettier from "eslint-config-prettier/flat";
-import tseslint from "typescript-eslint";
-import globals from "globals";
-import { defineConfig } from "eslint/config";
+import eslintPlugin from "eslint-plugin-eslint-plugin";
+import { importX } from "eslint-plugin-import-x";
 import jest from "eslint-plugin-jest";
+import jsdocPlugin from "eslint-plugin-jsdoc";
+import nodePlugin from "eslint-plugin-n";
+import * as regexpPlugin from "eslint-plugin-regexp";
+import security from "eslint-plugin-security";
+import * as sonarjs from "eslint-plugin-sonarjs";
+import unicornPlugin from "eslint-plugin-unicorn";
+import { defineConfig, globalIgnores } from "eslint/config";
+import globals from "globals";
+import * as tseslint from "typescript-eslint";
 
 export default defineConfig([
-  {
-    name: "Global Ignores",
-    ignores: ["coverage/**", "dist/**", "node_modules/**", ".vscode/**", ".github/**"],
-  },
+  globalIgnores(
+    [
+      "**/.cache/",
+      "**/coverage/",
+      "**/dist/",
+      "**/build/",
+      "**/temp/",
+      "**/tmp/",
+      "**/*.tsbuildinfo",
+      "package-lock.json",
+    ],
+    "Global Ignores",
+  ),
 
   {
-    files: ["**/*.{js,ts}"],
-    plugins: {
-      "@eslint-community/eslint-comments": eslintComments,
-      "@typescript-eslint": tseslint.plugin,
-      "eslint-plugin": eslintPlugin,
-      n,
-    },
-    extends: [eslint.configs.recommended, tseslint.configs.recommendedTypeChecked],
+    name: "ESLint core (JS/TS)",
+    files: ["**/*.{js,jsx,cjs,mjs,ts,tsx,cts,mts}"],
+    extends: [
+      eslint.configs.recommended,
+      tseslint.configs.recommendedTypeChecked,
+      eslintPlugin.configs.recommended,
+      regexpPlugin.configs["flat/recommended"],
+      sonarjs.configs.recommended,
+      unicornPlugin.configs.recommended,
+      nodePlugin.configs["flat/recommended-module"],
+      jsdocPlugin.configs["flat/recommended-typescript"],
+      security.configs.recommended,
+      importX.flatConfigs.recommended,
+      importX.flatConfigs.typescript,
+      eslintComments,
+    ],
     languageOptions: {
       ecmaVersion: "latest",
       globals: { ...globals.es2025, ...globals.node },
-      parser: tseslint.parser,
       parserOptions: {
         projectService: true,
         tsconfigRootDir: import.meta.dirname,
@@ -34,54 +56,28 @@ export default defineConfig([
       sourceType: "module",
     },
     rules: {
-      "@eslint-community/eslint-comments/no-unused-disable": "error",
-      "@typescript-eslint/array-type": ["error", { default: "array-simple" }],
-      "@typescript-eslint/ban-ts-comment": "error",
-      "@typescript-eslint/consistent-type-imports": [
+      // JSDoc tag spacing aligned with Prettier
+      "jsdoc/tag-lines": [
         "error",
-        { disallowTypeAnnotations: false, fixStyle: "inline-type-imports" },
+        "never",
+        { endLines: 0, startLines: 1, tags: { typedef: { lines: "any" } } },
       ],
-      "@typescript-eslint/no-empty-object-type": "error",
-      "@typescript-eslint/no-import-type-side-effects": "error",
-      "@typescript-eslint/no-require-imports": "error",
-      "@typescript-eslint/no-unused-vars": "error",
-      "@typescript-eslint/no-unsafe-function-type": "error",
-      "@typescript-eslint/no-wrapper-object-types": "error",
       "eslint-plugin/require-meta-docs-description": [
         "error",
         { pattern: "^(Enforce|Require|Disallow|Suggest|Prefer)" },
       ],
-      "eslint-plugin/test-case-property-ordering": "error",
-      curly: "error",
-      eqeqeq: ["error", "smart"],
-      "n/no-missing-import": "off",
-      "n/no-missing-require": "off",
-      "n/no-unsupported-features/es-builtins": "error",
-      "n/no-unsupported-features/es-syntax": "off",
-      "no-else-return": "error",
-      "no-negated-condition": "error",
-      "no-unused-vars": "off",
-      "no-var": "error",
-      "object-shorthand": ["error", "always", { avoidExplicitReturnArrows: true }],
-      "padding-line-between-statements": [
+      "unicorn/filename-case": [
         "error",
-        { blankLine: "always", prev: "*", next: "return" },
-        { blankLine: "always", prev: ["const", "let", "var"], next: "*" },
         {
-          blankLine: "any",
-          prev: ["const", "let", "var"],
-          next: ["const", "let", "var"],
+          cases: {
+            camelCase: true,
+            kebabCase: true,
+            pascalCase: true,
+          },
         },
-        { blankLine: "always", prev: "directive", next: "*" },
-        { blankLine: "any", prev: "directive", next: "directive" },
       ],
-      "prefer-const": ["error", { destructuring: "all" }],
-      "prefer-destructuring": ["error", { VariableDeclarator: { array: true, object: true } }],
-      "prefer-rest-params": "error",
-      "prefer-spread": "error",
-      "prefer-template": "error",
-      "require-unicode-regexp": "error",
-      "sort-imports": ["error", { ignoreDeclarationSort: true }],
+      "unicorn/no-null": "off",
+      "unicorn/prevent-abbreviations": "off",
     },
   },
 
