@@ -9,7 +9,26 @@
   <p>ESLint plugin for <a href="https://github.com/jest-community/jest-extended">Jest Extended</a></p>
 </div>
 
-[![Actions Status](https://github.com/jest-community/eslint-plugin-jest-extended/workflows/Unit%20tests%20%26%20Release/badge.svg?branch=main)](https://github.com/jest-community/eslint-plugin-jest-extended/actions)
+<p align="center">
+  <a href="https://github.com/Aesthermortis/eslint-plugin-jest-extended/actions/workflows/validate.yml">
+    <img
+      alt="Quality checks"
+      src="https://img.shields.io/github/actions/workflow/status/Aesthermortis/eslint-plugin-jest-extended/validate.yml?branch=main&label=Quality%20checks&logo=github&style=flat-square"
+    >
+  </a>
+  <a href="./LICENSE">
+    <img
+      alt="MIT License"
+      src="https://img.shields.io/badge/license-MIT-green.svg?style=flat-square"
+    >
+  </a>
+  <a href="https://github.com/prettier/prettier">
+    <img
+      alt="Prettier Code Style"
+      src="https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square"
+    >
+  </a>
+</p>
 
 ## Installation
 
