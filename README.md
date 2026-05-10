@@ -32,12 +32,21 @@
 
 ## Installation
 
+This fork can be installed with `npm` directly from GitHub as one of your
+project's `devDependencies`:
+
 ```sh
-npm install --save-dev eslint eslint-plugin-jest-extended
+npm i -D eslint github:Aesthermortis/eslint-plugin-jest-extended
 ```
 
-**Note:** If you installed ESLint globally then you must also install
-`eslint-plugin-jest-extended` globally.
+For reproducible installs, pin a branch, tag, or commit:
+
+```sh
+npm i -D eslint github:Aesthermortis/eslint-plugin-jest-extended#main
+```
+
+> [!NOTE]
+> This fork targets `Node.js 24+`, `npm 11+`, and `ESLint 10`.
 
 ## Usage
 
