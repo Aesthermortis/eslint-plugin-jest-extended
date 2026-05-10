@@ -7,6 +7,7 @@ import {
   isStringNode,
   isSupportedAccessor,
 } from "./accessors.js";
+import { AST_NODE_TYPES } from "./astNodeTypes.js";
 import {
   DescribeAlias,
   HookName,
@@ -16,21 +17,41 @@ import {
   findTopMostCallExpression,
 } from "./misc.js";
 
+// Parser helpers intentionally return parsed data, failure reasons, or null.
+/* eslint-disable sonarjs/function-return-type */
+
 const joinChains = (a: AccessorNode[] | null, b: AccessorNode[] | null): AccessorNode[] | null =>
   a && b ? [...a, ...b] : null;
 
+type ImportBindingDefinition = TSESLint.Scope.Definitions.ImportBindingDefinition;
+type VariableDefinition = TSESLint.Scope.Definitions.VariableDefinition;
+
+const DEFINITION_TYPE = {
+  ImportBinding: "ImportBinding" as ImportBindingDefinition["type"],
+  Variable: "Variable" as VariableDefinition["type"],
+} as const;
+
+/**
+ * Builds the static property-access chain for a node.
+ *
+ * @param node Node to inspect.
+ * @returns Accessor chain when every link is statically known.
+ */
 export function getNodeChain(node: TSESTree.Node): AccessorNode[] | null {
   if (isSupportedAccessor(node)) {
     return [node];
   }
 
   switch (node.type) {
-    case "TaggedTemplateExpression":
+    case AST_NODE_TYPES.TaggedTemplateExpression: {
       return getNodeChain(node.tag);
-    case "MemberExpression":
+    }
+    case AST_NODE_TYPES.MemberExpression: {
       return joinChains(getNodeChain(node.object), getNodeChain(node.property));
-    case "CallExpression":
+    }
+    case AST_NODE_TYPES.CallExpression: {
       return getNodeChain(node.callee);
+    }
   }
 
   return null;
@@ -88,8 +109,10 @@ export interface ParsedExpectFnCall extends BaseParsedJestFnCall, ModifiersAndMa
 }
 
 export type ParsedJestFnCall = ParsedGeneralJestFnCall | ParsedExpectFnCall;
+type ParseJestFnCallFailureReason = "matcher-not-called" | "matcher-not-found" | "modifier-unknown";
+type ParseJestFnCallResult = ParsedJestFnCall | ParseJestFnCallFailureReason | null;
 
-const ValidJestFnCallChains = [
+const ValidJestFnCallChains = new Set([
   "afterAll",
   "afterEach",
   "beforeAll",
@@ -158,9 +181,9 @@ const ValidJestFnCallChains = [
   "xtest.each",
   "xtest.failing",
   "xtest.failing.each",
-];
+]);
 
-// todo: switch back to using declaration merging once https://github.com/typescript-eslint/typescript-eslint/pull/8485
+// Pending: switch back to declaration merging once https://github.com/typescript-eslint/typescript-eslint/pull/8485
 //  is landed
 interface SharedConfigurationSettings {
   jest?: {
@@ -185,10 +208,7 @@ const resolvePossibleAliasedGlobal = (
   return null;
 };
 
-const parseJestFnCallCache = new WeakMap<
-  TSESTree.CallExpression,
-  ParsedJestFnCall | string | null
->();
+const parseJestFnCallCache = new WeakMap<TSESTree.CallExpression, ParseJestFnCallResult>();
 
 export const parseJestFnCall = (
   node: TSESTree.CallExpression,
@@ -206,7 +226,7 @@ export const parseJestFnCall = (
 export const parseJestFnCallWithReason = (
   node: TSESTree.CallExpression,
   context: TSESLint.RuleContext<string, unknown[]>,
-): ParsedJestFnCall | string | null => {
+): ParseJestFnCallResult => {
   let parsedJestFnCall = parseJestFnCallCache.get(node);
 
   /* istanbul ignore next */
@@ -224,7 +244,7 @@ export const parseJestFnCallWithReason = (
 const parseJestFnCallWithReasonInner = (
   node: TSESTree.CallExpression,
   context: TSESLint.RuleContext<string, unknown[]>,
-): ParsedJestFnCall | string | null => {
+): ParseJestFnCallResult => {
   const chain = getNodeChain(node);
 
   if (!chain?.length) {
@@ -232,17 +252,24 @@ const parseJestFnCallWithReasonInner = (
   }
 
   const [first, ...rest] = chain;
+  const last = chain.at(-1);
 
-  const lastLink = getAccessorValue(chain[chain.length - 1]);
-
-  // if we're an `each()`, ensure we're the outer CallExpression (i.e `.each()()`)
-  if (lastLink === "each") {
-    if (node.callee.type !== "CallExpression" && node.callee.type !== "TaggedTemplateExpression") {
-      return null;
-    }
+  if (!last) {
+    return null;
   }
 
-  if (node.callee.type === "TaggedTemplateExpression" && lastLink !== "each") {
+  const lastLink = getAccessorValue(last);
+
+  // if we're an `each()`, ensure we're the outer CallExpression (i.e `.each()()`)
+  if (
+    lastLink === "each" &&
+    node.callee.type !== AST_NODE_TYPES.CallExpression &&
+    node.callee.type !== AST_NODE_TYPES.TaggedTemplateExpression
+  ) {
+    return null;
+  }
+
+  if (node.callee.type === AST_NODE_TYPES.TaggedTemplateExpression && lastLink !== "each") {
     return null;
   }
 
@@ -257,7 +284,7 @@ const parseJestFnCallWithReasonInner = (
 
   const links = [name, ...rest.map((link) => getAccessorValue(link))];
 
-  if (name !== "jest" && name !== "expect" && !ValidJestFnCallChains.includes(links.join("."))) {
+  if (name !== "jest" && name !== "expect" && !ValidJestFnCallChains.has(links.join("."))) {
     return null;
   }
 
@@ -272,32 +299,21 @@ const parseJestFnCallWithReasonInner = (
   const type = determineJestFnType(name);
 
   if (type === "expect") {
-    const result = parseJestExpectCall(parsedJestFnCall);
-
-    // if the `expect` call chain is not valid, only report on the topmost node
-    // since all members in the chain are likely to get flagged for some reason
-    if (typeof result === "string" && findTopMostCallExpression(node) !== node) {
-      return null;
-    }
-
-    if (result === "matcher-not-found") {
-      if (node.parent?.type === "MemberExpression") {
-        return "matcher-not-called";
-      }
-    }
-
-    return result;
+    return parseJestExpectCallForNode(parsedJestFnCall, node);
   }
 
   // check that every link in the chain except the last is a member expression
-  if (chain.slice(0, chain.length - 1).some((nod) => nod.parent?.type !== "MemberExpression")) {
+  if (chain.slice(0, -1).some((nod) => nod.parent?.type !== AST_NODE_TYPES.MemberExpression)) {
     return null;
   }
 
   // ensure that we're at the "top" of the function call chain otherwise when
   // parsing e.g. x().y.z(), we'll incorrectly find & parse "x()" even though
   // the full chain is not a valid jest function call chain
-  if (node.parent?.type === "CallExpression" || node.parent?.type === "MemberExpression") {
+  if (
+    node.parent?.type === AST_NODE_TYPES.CallExpression ||
+    node.parent?.type === AST_NODE_TYPES.MemberExpression
+  ) {
     return null;
   }
 
@@ -307,6 +323,9 @@ const parseJestFnCallWithReasonInner = (
 type KnownMemberExpressionProperty<Specifics extends string = string> = AccessorNode<Specifics> & {
   parent: KnownMemberExpression<Specifics>;
 };
+type CalledMatcherMember = KnownMemberExpressionProperty & {
+  parent: KnownMemberExpression & { parent: TSESTree.CallExpression };
+};
 
 interface ModifiersAndMatcher {
   modifiers: KnownMemberExpressionProperty[];
@@ -315,18 +334,49 @@ interface ModifiersAndMatcher {
   args: TSESTree.CallExpression["arguments"];
 }
 
+const isCalledMatcherMember = (
+  member: KnownMemberExpressionProperty,
+): member is CalledMatcherMember =>
+  member.parent?.type === AST_NODE_TYPES.MemberExpression &&
+  member.parent.parent?.type === AST_NODE_TYPES.CallExpression;
+
+const isValidSecondModifier = (
+  modifiers: KnownMemberExpressionProperty[],
+  name: string,
+): boolean => {
+  if (name !== "not") {
+    return false;
+  }
+
+  const firstModifier = getAccessorValue(modifiers[0]);
+
+  return firstModifier === "resolves" || firstModifier === "rejects";
+};
+
+const getModifierFailure = (
+  modifiers: KnownMemberExpressionProperty[],
+  name: string,
+): ParseJestFnCallFailureReason | null => {
+  if (modifiers.length === 0) {
+    return Object.prototype.hasOwnProperty.call(ModifierName, name) ? null : "modifier-unknown";
+  }
+
+  if (modifiers.length === 1) {
+    return isValidSecondModifier(modifiers, name) ? null : "modifier-unknown";
+  }
+
+  return "modifier-unknown";
+};
+
 const findModifiersAndMatcher = (
   members: KnownMemberExpressionProperty[],
-): ModifiersAndMatcher | string => {
+): ModifiersAndMatcher | ParseJestFnCallFailureReason => {
   const modifiers: KnownMemberExpressionProperty[] = [];
 
   for (const member of members) {
     // check if the member is being called, which means it is the matcher
     // (and also the end of the entire "expect" call chain)
-    if (
-      member.parent?.type === "MemberExpression" &&
-      member.parent.parent?.type === "CallExpression"
-    ) {
+    if (isCalledMatcherMember(member)) {
       return {
         matcher: member,
         args: member.parent.parent.arguments,
@@ -336,26 +386,10 @@ const findModifiersAndMatcher = (
 
     // otherwise, it should be a modifier
     const name = getAccessorValue(member);
+    const modifierFailure = getModifierFailure(modifiers, name);
 
-    if (modifiers.length === 0) {
-      // the first modifier can be any of the three modifiers
-      if (!Object.prototype.hasOwnProperty.call(ModifierName, name)) {
-        return "modifier-unknown";
-      }
-    } else if (modifiers.length === 1) {
-      // the second modifier can only be "not"
-      if (name !== ModifierName.not) {
-        return "modifier-unknown";
-      }
-
-      const firstModifier = getAccessorValue(modifiers[0]);
-
-      // and the first modifier has to be either "resolves" or "rejects"
-      if (firstModifier !== ModifierName.resolves && firstModifier !== ModifierName.rejects) {
-        return "modifier-unknown";
-      }
-    } else {
-      return "modifier-unknown";
+    if (modifierFailure) {
+      return modifierFailure;
     }
 
     modifiers.push(member);
@@ -367,7 +401,7 @@ const findModifiersAndMatcher = (
 
 const parseJestExpectCall = (
   typelessParsedJestFnCall: Omit<ParsedJestFnCall, "type">,
-): ParsedExpectFnCall | string => {
+): ParsedExpectFnCall | ParseJestFnCallFailureReason => {
   const modifiersAndMatcher = findModifiersAndMatcher(typelessParsedJestFnCall.members);
 
   if (typeof modifiersAndMatcher === "string") {
@@ -381,20 +415,37 @@ const parseJestExpectCall = (
   };
 };
 
+const parseJestExpectCallForNode = (
+  typelessParsedJestFnCall: Omit<ParsedJestFnCall, "type">,
+  node: TSESTree.CallExpression,
+): ParsedExpectFnCall | ParseJestFnCallFailureReason | null => {
+  const result = parseJestExpectCall(typelessParsedJestFnCall);
+
+  // if the `expect` call chain is not valid, only report on the topmost node
+  // since all members in the chain are likely to get flagged for some reason
+  if (typeof result === "string" && findTopMostCallExpression(node) !== node) {
+    return null;
+  }
+
+  if (result === "matcher-not-found" && node.parent?.type === AST_NODE_TYPES.MemberExpression) {
+    return "matcher-not-called";
+  }
+
+  return result;
+};
+
 interface ImportDetails {
   source: string;
   local: string;
   imported: string;
 }
 
-const describeImportDefAsImport = (
-  def: TSESLint.Scope.Definitions.ImportBindingDefinition,
-): ImportDetails | null => {
-  if (def.parent.type === "TSImportEqualsDeclaration") {
+const describeImportDefAsImport = (def: ImportBindingDefinition): ImportDetails | null => {
+  if (def.parent.type === AST_NODE_TYPES.TSImportEqualsDeclaration) {
     return null;
   }
 
-  if (def.node.type !== "ImportSpecifier") {
+  if (def.node.type !== AST_NODE_TYPES.ImportSpecifier) {
     return null;
   }
 
@@ -411,31 +462,32 @@ const describeImportDefAsImport = (
 };
 
 /**
- * Attempts to find the node that represents the import source for the
- * given expression node, if it looks like it's an import.
+ * Attempts to find the node that represents the import source for the given expression node, if it looks like it's an
+ * import.
  *
- * If no such node can be found (e.g. because the expression doesn't look
- * like an import), then `null` is returned instead.
+ * If no such node can be found (e.g. because the expression doesn't look like an import), then `null` is returned
+ * instead.
+ *
+ * @param node Expression to inspect.
+ * @returns Import source node when the expression is an import-like call.
  */
 const findImportSourceNode = (node: TSESTree.Expression): TSESTree.Node | null => {
-  if (node.type === "AwaitExpression") {
-    if (node.argument.type === "ImportExpression") {
+  if (node.type === AST_NODE_TYPES.AwaitExpression) {
+    if (node.argument.type === AST_NODE_TYPES.ImportExpression) {
       return node.argument.source;
     }
 
     return null;
   }
 
-  if (node.type === "CallExpression" && isIdentifier(node.callee, "require")) {
+  if (node.type === AST_NODE_TYPES.CallExpression && isIdentifier(node.callee, "require")) {
     return node.arguments[0] ?? null;
   }
 
   return null;
 };
 
-const describeVariableDefAsImport = (
-  def: TSESLint.Scope.Definitions.VariableDefinition,
-): ImportDetails | null => {
+const describeVariableDefAsImport = (def: VariableDefinition): ImportDetails | null => {
   // make sure that we've actually being assigned a value
   if (!def.node.init) {
     return null;
@@ -447,7 +499,7 @@ const describeVariableDefAsImport = (
     return null;
   }
 
-  if (def.name.parent?.type !== "Property") {
+  if (def.name.parent?.type !== AST_NODE_TYPES.Property) {
     return null;
   }
 
@@ -466,18 +518,21 @@ const describeVariableDefAsImport = (
  * Attempts to describe a definition as an import if possible.
  *
  * If the definition is an import binding, it's described as you'd expect.
- * If the definition is a variable, then we try and determine if it's either
- * a dynamic `import()` or otherwise a call to `require()`.
+ * If the definition is a variable, then we try and determine if it's either a dynamic `import()` or otherwise a call to
+ * `require()`.
  *
- * If it's neither of these, `null` is returned to indicate that the definition
- * is not describable as an import of any kind.
+ * If it's neither of these, `null` is returned to indicate that the definition is not describable as an import of any
+ * kind.
+ *
+ * @param def Definition to describe.
+ * @returns Import details when the definition points to an import.
  */
-const describePossibleImportDef = (def: TSESLint.Scope.Definition) => {
-  if (def.type === "Variable") {
+const describePossibleImportDef = (def: TSESLint.Scope.Definition): ImportDetails | null => {
+  if (def.type === DEFINITION_TYPE.Variable) {
     return describeVariableDefAsImport(def);
   }
 
-  if (def.type === "ImportBinding") {
+  if (def.type === DEFINITION_TYPE.ImportBinding) {
     return describeImportDefAsImport(def);
   }
 
@@ -494,7 +549,11 @@ const resolveScope = (
     const ref = currentScope.set.get(identifier);
 
     if (ref && ref.defs.length > 0) {
-      const def = ref.defs[ref.defs.length - 1];
+      const def = ref.defs.at(-1);
+
+      if (!def) {
+        return "local";
+      }
 
       const importDetails = describePossibleImportDef(def);
 
@@ -555,7 +614,7 @@ const resolveToJestFn = (
 
 /* istanbul ignore next */
 const getScope = (context: TSESLint.RuleContext<string, unknown[]>, node: TSESTree.Node) => {
-  const sourceCode = context.sourceCode ?? context.getSourceCode();
-
-  return sourceCode.getScope?.(node) ?? context.getScope();
+  return context.sourceCode.getScope(node);
 };
+
+/* eslint-enable sonarjs/function-return-type */

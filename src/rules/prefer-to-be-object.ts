@@ -1,4 +1,5 @@
 import {
+  AST_NODE_TYPES,
   createRule,
   followTypeAssertionChain,
   getAccessorValue,
@@ -51,7 +52,7 @@ export default createRule<Options, MessageIds>({
 
         const { parent: expect } = jestFnCall.head.node;
 
-        if (expect?.type !== "CallExpression") {
+        if (expect?.type !== AST_NODE_TYPES.CallExpression) {
           return;
         }
 
@@ -83,7 +84,7 @@ export default createRule<Options, MessageIds>({
 
               // toBeFalse can't have arguments, so this won't be true beforehand
               invertCondition =
-                matcherArg.type === "Literal" &&
+                matcherArg.type === AST_NODE_TYPES.Literal &&
                 followTypeAssertionChain(matcherArg).value === false;
             }
 

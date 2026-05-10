@@ -1,8 +1,9 @@
-import { parse as parsePath } from "node:path";
+import path from "node:path";
 import type { TSESLint, TSESTree } from "@typescript-eslint/utils";
 import type { Rule } from "eslint";
 import packageJson from "../../../package.json" with { type: "json" };
 import { type AccessorNode, getAccessorValue, isSupportedAccessor } from "./accessors.js";
+import { AST_NODE_TYPES } from "./astNodeTypes.js";
 import { followTypeAssertionChain } from "./followTypeAssertionChain.js";
 import type { ParsedExpectFnCall } from "./parseJestFnCall.js";
 
@@ -23,7 +24,7 @@ interface RuleDefinition<Options extends unknown[], MessageIds extends string> {
 export const createRule = <Options extends unknown[], MessageIds extends string>(
   rule: RuleDefinition<Options, MessageIds>,
 ): RuleModuleWithName => {
-  const ruleName = parsePath(rule.name).name;
+  const ruleName = path.parse(rule.name).name;
   const repositorySource = packageJson.repository as unknown;
   const repository =
     typeof repositorySource === "string"
@@ -32,7 +33,10 @@ export const createRule = <Options extends unknown[], MessageIds extends string>
 
   return {
     ...rule,
-    create: rule.create as unknown as Rule.RuleModule["create"],
+    create: (context) =>
+      rule.create(
+        context as unknown as Readonly<TSESLint.RuleContext<MessageIds, Options>>,
+      ) as Rule.RuleListener,
     meta: {
       ...rule.meta,
       docs: {
@@ -40,7 +44,7 @@ export const createRule = <Options extends unknown[], MessageIds extends string>
         url: `${repository}/blob/v${packageJson.version}/docs/rules/${ruleName}.md`,
       },
     },
-  } as RuleModuleWithName;
+  };
 };
 
 /**
@@ -111,7 +115,7 @@ export const findTopMostCallExpression = (
   let { parent } = node;
 
   while (parent) {
-    if (parent.type === "CallExpression") {
+    if (parent.type === AST_NODE_TYPES.CallExpression) {
       topMostCallExpression = parent;
 
       parent = parent.parent;
@@ -119,7 +123,7 @@ export const findTopMostCallExpression = (
       continue;
     }
 
-    if (parent.type !== "MemberExpression") {
+    if (parent.type !== AST_NODE_TYPES.MemberExpression) {
       break;
     }
 
@@ -130,14 +134,14 @@ export const findTopMostCallExpression = (
 };
 
 export const isBooleanLiteral = (node: TSESTree.Node): node is TSESTree.BooleanLiteral =>
-  node.type === "Literal" && typeof node.value === "boolean";
+  node.type === AST_NODE_TYPES.Literal && typeof node.value === "boolean";
 
 export const getFirstMatcherArg = (
   expectFnCall: ParsedExpectFnCall,
 ): TSESTree.SpreadElement | TSESTree.Expression => {
   const [firstArg] = expectFnCall.args;
 
-  if (firstArg.type === "SpreadElement") {
+  if (firstArg.type === AST_NODE_TYPES.SpreadElement) {
     return firstArg;
   }
 
@@ -148,7 +152,7 @@ export const isInstanceOfBinaryExpression = (
   node: TSESTree.Node,
   className: string,
 ): node is TSESTree.BinaryExpression =>
-  node.type === "BinaryExpression" &&
+  node.type === AST_NODE_TYPES.BinaryExpression &&
   node.operator === "instanceof" &&
   isSupportedAccessor(node.right, className);
 
@@ -166,6 +170,9 @@ export const isParsedInstanceOfMatcherCall = (
 /**
  * Checks if the given `ParsedExpectMatcher` is either a call to one of the equality matchers,
  * with a boolean` literal as the sole argument, *or* is a call to `toBeTrue` or `toBeFalse`.
+ *
+ * @param expectFnCall Parsed matcher call to check.
+ * @returns Whether the matcher asserts a boolean equality.
  */
 export const isBooleanEqualityMatcher = (expectFnCall: ParsedExpectFnCall): boolean => {
   const matcherName = getAccessorValue(expectFnCall.matcher);

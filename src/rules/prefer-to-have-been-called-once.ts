@@ -1,4 +1,5 @@
 import {
+  AST_NODE_TYPES,
   createRule,
   getAccessorValue,
   getFirstMatcherArg,
@@ -34,7 +35,7 @@ export default createRule({
         ) {
           const arg = getFirstMatcherArg(jestFnCall);
 
-          if (arg.type !== "Literal" || arg.value !== 1) {
+          if (arg.type !== AST_NODE_TYPES.Literal || arg.value !== 1) {
             return;
           }
 

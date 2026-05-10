@@ -1,5 +1,6 @@
 import type { TSESTree } from "@typescript-eslint/utils";
 import {
+  AST_NODE_TYPES,
   createRule,
   followTypeAssertionChain,
   getAccessorValue,
@@ -11,8 +12,8 @@ import {
 } from "./utils/index.js";
 
 const isArrayIsArrayCall = (node: TSESTree.Node): node is TSESTree.CallExpression =>
-  node.type === "CallExpression" &&
-  node.callee.type === "MemberExpression" &&
+  node.type === AST_NODE_TYPES.CallExpression &&
+  node.callee.type === AST_NODE_TYPES.MemberExpression &&
   isSupportedAccessor(node.callee.object, "Array") &&
   isSupportedAccessor(node.callee.property, "isArray");
 
@@ -59,7 +60,7 @@ export default createRule<Options, MessageIds>({
 
         const { parent: expect } = jestFnCall.head.node;
 
-        if (expect?.type !== "CallExpression") {
+        if (expect?.type !== AST_NODE_TYPES.CallExpression) {
           return;
         }
 
@@ -79,21 +80,21 @@ export default createRule<Options, MessageIds>({
           fix(fixer) {
             const fixes = [
               fixer.replaceText(jestFnCall.matcher, "toBeArray"),
-              expectArg.type === "CallExpression"
+              expectArg.type === AST_NODE_TYPES.CallExpression
                 ? fixer.remove(expectArg.callee)
                 : fixer.removeRange([expectArg.left.range[1], expectArg.range[1]]),
             ];
 
             let invertCondition = getAccessorValue(jestFnCall.matcher) === "toBeFalse";
 
-            if (jestFnCall.args.length) {
+            if (jestFnCall.args.length > 0) {
               const [matcherArg] = jestFnCall.args;
 
               fixes.push(fixer.remove(matcherArg));
 
               // toBeFalse can't have arguments, so this won't be true beforehand
               invertCondition =
-                matcherArg.type === "Literal" &&
+                matcherArg.type === AST_NODE_TYPES.Literal &&
                 followTypeAssertionChain(matcherArg).value === false;
             }
 

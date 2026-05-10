@@ -1,4 +1,5 @@
 import type { TSESTree } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES } from "./astNodeTypes.js";
 
 /**
  * A `Literal` with a `value` of type `string`.
@@ -13,16 +14,16 @@ interface StringLiteral<Value extends string = string> extends TSESTree.StringLi
  * If a `value` is provided & the `node` is a `StringLiteral`,
  * the `value` will be compared to that of the `StringLiteral`.
  *
- * @param {Node} node
- * @param {V} [value]
- * @returns {node is StringLiteral<V>}
+ * @param node Node to check.
+ * @param [value] Expected literal value.
+ * @returns Whether the node is a string literal.
  * @template V
  */
 const isStringLiteral = <V extends string>(
   node: TSESTree.Node,
   value?: V,
 ): node is StringLiteral<V> =>
-  node.type === "Literal" &&
+  node.type === AST_NODE_TYPES.Literal &&
   typeof node.value === "string" &&
   (value === undefined || node.value === value);
 
@@ -38,16 +39,16 @@ interface TemplateLiteral<Value extends string = string> extends TSESTree.Templa
  * If a `value` is provided & the `node` is a `TemplateLiteral`,
  * the `value` will be compared to that of the `TemplateLiteral`.
  *
- * @param {Node} node
- * @param {V} [value]
- * @returns {node is TemplateLiteral<V>}
+ * @param node Node to check.
+ * @param [value] Expected template value.
+ * @returns Whether the node is a simple template literal.
  * @template V
  */
 const isTemplateLiteral = <V extends string>(
   node: TSESTree.Node,
   value?: V,
 ): node is TemplateLiteral<V> =>
-  node.type === "TemplateLiteral" &&
+  node.type === AST_NODE_TYPES.TemplateLiteral &&
   node.quasis.length === 1 && // bail out if not simple
   (value === undefined || node.quasis[0].value.raw === value);
 
@@ -56,9 +57,9 @@ export type StringNode<S extends string = string> = StringLiteral<S> | TemplateL
 /**
  * Checks if the given `node` is a {@link StringNode}.
  *
- * @param {Node} node
- * @param {V} [specifics]
- * @returns {node is StringNode}
+ * @param node Node to check.
+ * @param [specifics] Expected string value.
+ * @returns Whether the node is a supported string node.
  * @template V
  */
 export const isStringNode = <V extends string>(
@@ -72,8 +73,8 @@ export const isStringNode = <V extends string>(
  * If the `node` is a `TemplateLiteral`, the `raw` value is used;
  * otherwise, `value` is returned instead.
  *
- * @param {StringNode<S>} node
- * @returns {S}
+ * @param node String node to read.
+ * @returns Static string value for the node.
  * @template S
  */
 export const getStringValue = <S extends string>(node: StringNode<S>): S =>
@@ -92,16 +93,16 @@ interface KnownIdentifier<Name extends string> extends TSESTree.Identifier {
  * If a `name` is provided, & the `node` is an `Identifier`,
  * the `name` will be compared to that of the `identifier`.
  *
- * @param {Node} node
- * @param {V} [name]
- * @returns {node is KnownIdentifier<Name>}
+ * @param node Node to check.
+ * @param [name] Expected identifier name.
+ * @returns Whether the node is a matching identifier.
  * @template V
  */
 export const isIdentifier = <V extends string>(
   node: TSESTree.Node,
   name?: V,
 ): node is KnownIdentifier<V> =>
-  node.type === "Identifier" && (name === undefined || node.name === name);
+  node.type === AST_NODE_TYPES.Identifier && (name === undefined || node.name === name);
 
 /**
  * Checks if the given `node` is a "supported accessor".
@@ -118,9 +119,9 @@ export const isIdentifier = <V extends string>(
  * Note that `value` here refers to the normalised value.
  * The property that holds the value is not always called `name`.
  *
- * @param {Node} node
- * @param {V} [value]
- * @returns {node is AccessorNode<V>}
+ * @param node Node to check.
+ * @param [value] Expected accessor value.
+ * @returns Whether the node is a supported accessor.
  * @template V
  */
 export const isSupportedAccessor = <V extends string>(
@@ -132,12 +133,12 @@ export const isSupportedAccessor = <V extends string>(
  * Gets the value of the given `AccessorNode`,
  * account for the different node types.
  *
- * @param {AccessorNode<S>} accessor
- * @returns {S}
+ * @param accessor Accessor node to read.
+ * @returns Static accessor value.
  * @template S
  */
 export const getAccessorValue = <S extends string = string>(accessor: AccessorNode<S>): S =>
-  accessor.type === "Identifier" ? accessor.name : getStringValue(accessor);
+  accessor.type === AST_NODE_TYPES.Identifier ? accessor.name : getStringValue(accessor);
 
 export type AccessorNode<Specifics extends string = string> =
   | StringNode<Specifics>

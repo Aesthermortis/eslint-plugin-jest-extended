@@ -1,4 +1,5 @@
 import type { TSESTree } from "@typescript-eslint/utils";
+import { AST_NODE_TYPES } from "./astNodeTypes.js";
 
 export type MaybeTypeCast<Expression extends TSESTree.Expression> =
   | TSTypeCastExpression<Expression>
@@ -21,7 +22,7 @@ interface TypeAssertionChain<Expression extends TSESTree.Expression = TSESTree.E
 const isTypeCastExpression = <Expression extends TSESTree.Expression>(
   node: MaybeTypeCast<Expression>,
 ): node is TSTypeCastExpression<Expression> =>
-  node.type === "TSAsExpression" || node.type === "TSTypeAssertion";
+  node.type === AST_NODE_TYPES.TSAsExpression || node.type === AST_NODE_TYPES.TSTypeAssertion;
 
 export const followTypeAssertionChain = <Expression extends TSESTree.Expression>(
   expression: MaybeTypeCast<Expression>,

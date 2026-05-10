@@ -1,5 +1,6 @@
 import type { TSESTree } from "@typescript-eslint/utils";
 import {
+  AST_NODE_TYPES,
   EqualityMatcher,
   createRule,
   getAccessorValue,
@@ -12,7 +13,7 @@ interface FalseLiteral extends TSESTree.BooleanLiteral {
 }
 
 const isFalseLiteral = (node: TSESTree.Node): node is FalseLiteral =>
-  node.type === "Literal" && node.value === false;
+  node.type === AST_NODE_TYPES.Literal && node.value === false;
 
 export default createRule({
   name: "prefer-to-be-false",
