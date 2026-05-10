@@ -446,6 +446,28 @@ ruleTester.run("esm (dynamic)", rule, {
         it('is not a jest function', () => {});
       `,
     },
+    {
+      code: dedent`
+        const { it } = require();
+
+        it('is not resolved without a require source', () => {});
+      `,
+    },
+    {
+      code: dedent`
+        const it = require("@jest/globals");
+
+        it('is not resolved without a destructured binding', () => {});
+      `,
+    },
+    {
+      code: dedent`
+        const getPropertyName = () => "it";
+        const { [getPropertyName()]: it } = require("@jest/globals");
+
+        it('is not resolved from a computed destructuring key', () => {});
+      `,
+    },
   ],
   invalid: [
     {
@@ -809,6 +831,13 @@ typescriptRuleTester.run("typescript", rule, {
     },
     {
       code: dedent`
+        import it = require('@jest/globals');
+
+        it('is not a jest function', () => {});
+      `,
+    },
+    {
+      code: dedent`
         import { it } from '../it-utils';
 
         it('is not a jest function', () => {});
@@ -876,6 +905,83 @@ typescriptRuleTester.run("typescript", rule, {
     },
   ],
 });
+
+const createArrayAtOverrideRule = (shouldHideLastElement: (array: unknown[]) => boolean) =>
+  createRule({
+    name: "parse-jest-fn-call-array-at-override-test",
+    meta: {
+      docs: {
+        description: "Fake rule for testing parseJestFnCall defensive guards",
+      },
+      messages: {
+        details: "details",
+      },
+      schema: [],
+      type: "problem",
+    },
+    defaultOptions: [],
+    create: (context) => ({
+      CallExpression(node) {
+        const originalAt = Array.prototype.at;
+
+        Array.prototype.at = function atWithHiddenLastElement<T>(
+          this: T[],
+          index: number,
+        ): T | undefined {
+          if (index === -1 && shouldHideLastElement(this)) {
+            return undefined;
+          }
+
+          return originalAt.call(this, index);
+        };
+
+        try {
+          const jestFnCall = parseJestFnCall(node, context);
+
+          if (jestFnCall) {
+            context.report({
+              messageId: "details",
+              node,
+            });
+          }
+        } finally {
+          Array.prototype.at = originalAt;
+        }
+      },
+    }),
+  });
+
+ruleTester.run(
+  "defensive parse guard for empty terminal chains",
+  createArrayAtOverrideRule((array) => array.every(isNode)),
+  {
+    valid: ["expect(value).toBe(expected);"],
+    invalid: [],
+  },
+);
+
+ruleTester.run(
+  "defensive scope guard for missing definition records",
+  createArrayAtOverrideRule((array) =>
+    array.some(
+      (entry) =>
+        typeof entry === "object" &&
+        entry !== null &&
+        "type" in entry &&
+        (entry.type === "Variable" || entry.type === "ImportBinding"),
+    ),
+  ),
+  {
+    valid: [
+      dedent`
+        const expect = () => {};
+
+        expect(value).toBe(expected);
+      `,
+    ],
+    invalid: [],
+  },
+);
 
 ruleTester.run("misc", rule, {
   valid: [

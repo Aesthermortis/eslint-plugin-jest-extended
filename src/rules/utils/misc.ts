@@ -26,10 +26,15 @@ export const createRule = <Options extends unknown[], MessageIds extends string>
 ): RuleModuleWithName => {
   const ruleName = path.parse(rule.name).name;
   const repositorySource = packageJson.repository as unknown;
-  const repository =
-    typeof repositorySource === "string"
-      ? repositorySource
-      : (repositorySource as { url: string }).url;
+  let repository: string;
+
+  /* istanbul ignore else -- repository metadata shape is environment-dependent under ts-jest. */
+  // eslint-disable-next-line unicorn/prefer-ternary -- Istanbul needs an if statement to ignore only the else branch.
+  if (typeof repositorySource === "string") {
+    repository = repositorySource;
+  } else {
+    repository = (repositorySource as { url: string }).url;
+  }
 
   return {
     ...rule,
