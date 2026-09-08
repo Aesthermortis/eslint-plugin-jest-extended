@@ -3,5 +3,4 @@ node_modules/
 coverage/
 lib/
 *.log
-dist/
 .cache/

@@ -43,7 +43,6 @@
     "lint": "eslint . --cache --cache-strategy content --cache-location .cache/eslint/ --report-unused-disable-directives",
     "lint:fix": "eslint . --fix --cache --cache-strategy content --cache-location .cache/eslint/ --report-unused-disable-directives",
     "prepack": "npm run build",
-    "prepare": "husky && npm run build",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
     "test:update": "npm run test:coverage -- --updateSnapshot",
