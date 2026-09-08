@@ -87,6 +87,14 @@
 
 * support `failing.each` ([#179](https://github.com/jest-community/eslint-plugin-jest-extended/issues/179)) ([b2adda4](https://github.com/jest-community/eslint-plugin-jest-extended/commit/b2adda4cacf1616ce18bed4d655a8a5b533c6664))
 
+## [4.0.1](https://github.com/Aesthermortis/eslint-plugin-jest-extended/compare/v4.0.0...v4.0.1) (2026-05-10)
+
+
+### 📚 Documentation
+
+* **readme:** update badge section with quality checks and license info ([d993079](https://github.com/Aesthermortis/eslint-plugin-jest-extended/commit/d99307942025655998d570c02cbd5d2b82b2c98f))
+* **readme:** update installation instructions for clarity ([e477c9f](https://github.com/Aesthermortis/eslint-plugin-jest-extended/commit/e477c9f48417f0c372a7024bece54d85aef837b0))
+
 ## [4.0.0](https://github.com/Aesthermortis/eslint-plugin-jest-extended/compare/v3.0.1...v4.0.0) (2026-05-10)
 
 
